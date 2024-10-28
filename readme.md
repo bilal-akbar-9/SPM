@@ -47,6 +47,7 @@ The Pharmacy Management and Integration Service module is a microservice designe
 1. Clone the repository: `git clone https://github.com/your-username/pharmacy-management-service.git`
 2. Getting into respective directories: `cd backend` and `cd frontend`
 3. Install dependencies in both the directoreis: `npm install`
-4. Start the backend server: `node server.js`
-5. Start the frontend server: `npm run dev`
-4. Open the application in your browser at `http://localhost:5000`
+4. Set the environment variables for frontend: `VITE_API_URL=ADD_YOUR_BACKEND_URL`
+5. Start the backend server: `node server.js`
+6. Start the frontend server: `npm run dev`
+7. Open the application in your browser at `http://localhost:5000`
