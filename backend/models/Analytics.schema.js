@@ -1,7 +1,6 @@
-const { ref } = require("joi");
 const mongoose = require("mongoose");
 
-const analyticsServiceSchema = new mongoose.Schema({
+const AnalyticsSchema = new mongoose.Schema({
 	medicationUsageReport: [
 		{
 			medicationId: {
@@ -42,5 +41,5 @@ const analyticsServiceSchema = new mongoose.Schema({
 	],
 });
 
-const AnalyticsService = mongoose.model("AnalyticsService", analyticsServiceSchema);
-module.exports = AnalyticsService;
+const model = mongoose.model("Analytics", AnalyticsSchema);
+module.exports = model;
