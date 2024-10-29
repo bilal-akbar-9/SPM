@@ -2,10 +2,10 @@ import { createBrowserRouter } from "react-router-dom";
 
 // import Layout from "./components/Layout";
 // import Home from "./pages/Home/Home";
-// import Inventory from "./pages/Inventory/Inventory";
-// import Prescriptions from "./pages/Prescriptions/Prescriptions";
-// import Billing from "./pages/Billing/Billing";
-// import Reports from "./pages/Reports/Reports";
+import Inventory from "./pages/Inventory/Inventory";
+import Prescription from "./pages/Prescription/Prescription";
+import Billing from "./pages/Billing/Billings";
+import Analytics from "./pages/Analytics/Analytics";
 
 // import AdminLayout from "./components/AdminLayout/AdminLayout";
 // import AdminDashboard from "./pages/AdminDashboard/AdminDashboard";
@@ -23,19 +23,19 @@ const routes = createBrowserRouter([
 			},
 			{
 				path: "inventory",
-				// element: <Inventory />,
+				element: <Inventory />,
 			},
 			{
 				path: "prescriptions",
-				// element: <Prescriptions />,
+				element: <Prescription />,
 			},
 			{
 				path: "billing",
-				// element: <Billing />,
+				element: <Billing />,
 			},
 			{
-				path: "reports",
-				// element: <Reports />,
+				path: "analytics",
+				element: <Analytics />,
 			},
 		],
 	},
