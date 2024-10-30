@@ -7,6 +7,9 @@ const cors = require("cors");
 dotenv.config();
 
 //Routes
+const pharmacyRoutes = require("./routes/PharmacyRoutes");
+const analyticsRoutes = require("./routes/AnalyticsRoutes");
+const prescriptionRoutes = require("./routes/PrescriptionRoutes");
 
 
 //Express app intialization
@@ -33,6 +36,9 @@ const connectDB = async () => {
 };
 
 //Routes initialization
+app.use("/pharmacy-api/pharmacies", pharmacyRoutes);
+app.use("/pharmacy-api/analytics", analyticsRoutes);
+app.use("/pharmacy-api/prescriptions", prescriptionRoutes);
 
 //Listen to port
 const PORT = process.env.PORT || 3000;
