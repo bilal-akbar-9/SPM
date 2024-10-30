@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 // Pharmacy Service Schema
-const pharmacyServiceSchema = new mongoose.Schema({
+const PharmacySchema = new mongoose.Schema({
 	pharmacyId: {
 		type: String,
 		required: true,
@@ -22,5 +22,5 @@ const pharmacyServiceSchema = new mongoose.Schema({
 	},
 });
 
-const PharmacyService = mongoose.model("PharmacyService", pharmacyServiceSchema);
-module.exports = PharmacyService;
+const model = mongoose.model("Pharmacy", PharmacySchema);
+module.exports = model;
