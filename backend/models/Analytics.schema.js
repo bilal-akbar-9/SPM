@@ -1,6 +1,12 @@
+const { ref } = require("joi");
 const mongoose = require("mongoose");
 
 const AnalyticsSchema = new mongoose.Schema({
+	pharmacyId: {
+		type: String,
+		required: true,
+		ref: "Pharmacy",
+	},
 	medicationUsageReport: [
 		{
 			medicationId: {
