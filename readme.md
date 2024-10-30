@@ -52,7 +52,7 @@ The Pharmacy Management and Integration Service module is a microservice designe
      VITE_API_URL=ADD_YOUR_BACKEND_URL
    - Backend: Create `.env` file and add:
         PORT=3000
-        MONGODB_STRING=ADD_YOUR_MONGODB_URL
+        MONGODB_STRING=mongodb://127.0.0.1:27017/s13-Pharamcy-DB
         FRONTEND_URL=http://localhost:5174 
 5. Start the backend server: `node server.js`
 6. Start the frontend server: `npm run dev`
