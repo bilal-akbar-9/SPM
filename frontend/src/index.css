@@ -1,14 +1,16 @@
 /* The colors scheme of the app*/
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
-  --text: #163020;
-  --background: #fffdfd;
+  --text: ##00191e;
+  --background: #f7feff;
   --chakra-primary: #319795;
-  --primary: #517946;
-  --secondary: #a5bcbc;
-  --accent: #8eabb7;
-  --border: #bcadad;
-  --button_background: #fffdfd;
-  --button_hover: #e9e4e4;
+  --primary: #14d0fc;
+  --secondary: ##72a5fd;
+  --accent: ##3b55fc;
+  --button_hover: #20b6d8;
 }
 /* The font  */
 @font-face {
