@@ -15,7 +15,7 @@ const AnalyticsSchema = new mongoose.Schema({
 				required: true,
 				match: /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/, // UUID format
 			},
-			totalQuantityUsed: {
+			totalSold: {
 				type: Number,
 				required: true,
 				min: 0,
