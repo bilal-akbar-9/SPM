@@ -1,11 +1,16 @@
 import { createBrowserRouter } from "react-router-dom";
 
+//Probably Temp Routes that will be replaced after full project integration
+import Login from "./pages/Login/Login";
+import Register from "./pages/Register/Register";
+
 // import Layout from "./components/Layout";
 // import Home from "./pages/Home/Home";
 import Inventory from "./pages/Inventory/Inventory";
 import Prescription from "./pages/Prescription/Prescription";
 import Billing from "./pages/Billing/Billings";
 import Analytics from "./pages/Analytics/Analytics";
+
 
 // import AdminLayout from "./components/AdminLayout/AdminLayout";
 // import AdminDashboard from "./pages/AdminDashboard/AdminDashboard";
@@ -37,6 +42,14 @@ const routes = createBrowserRouter([
 				path: "analytics",
 				element: <Analytics />,
 			},
+			{
+				path: "/login",
+				element: <Login />,
+			},
+			{
+				path: "/register",
+				element: <Register />,
+			}
 		],
 	},
 	{
