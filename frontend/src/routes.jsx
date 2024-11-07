@@ -10,6 +10,11 @@ import Inventory from "./pages/Inventory/Inventory";
 import Prescription from "./pages/Prescription/Prescription";
 import Billing from "./pages/Billing/Billings";
 import Analytics from "./pages/Analytics/Analytics";
+import PharmacySelection from "./pages/PharmacySelection";
+import PharmacyDashboardHome from "./pages/PharmacyDashboardHome";
+
+//Layouts
+import HomeLayout from "./pages/HomeLayout";
 
 
 // import AdminLayout from "./components/AdminLayout/AdminLayout";
@@ -19,39 +24,48 @@ import Analytics from "./pages/Analytics/Analytics";
 
 const routes = createBrowserRouter([
 	{
-		path: "/",
-		// element: <Layout />,
-		children: [
-			{
-				path: "",
-				// element: <Home />,
-			},
-			{
-				path: "inventory",
-				element: <Inventory />,
-			},
-			{
-				path: "prescriptions",
-				element: <Prescription />,
-			},
-			{
-				path: "billing",
-				element: <Billing />,
-			},
-			{
-				path: "analytics",
-				element: <Analytics />,
-			},
-			{
-				path: "/login",
-				element: <Login />,
-			},
-			{
-				path: "/register",
-				element: <Register />,
-			}
-		],
-	},
+        path: "/",
+        children: [
+            {
+                path: "/",
+                element: <Login />
+            },
+            {
+                path: "register",
+                element: <Register />
+            },
+            {
+                path: "pharmacy-selection",
+                element: <PharmacySelection />
+            },
+            {
+                path: "dashboard",
+                element: <HomeLayout />,
+                children: [
+                    {
+                        path: "inventory",
+                        element: <Inventory />
+                    },
+                    {
+                        path: "prescriptions",
+                        element: <Prescription />
+                    },
+                    {
+                        path: "billing",
+                        element: <Billing />
+                    },
+                    {
+                        path: "analytics",
+                        element: <Analytics />
+                    },
+                    {
+                        path: "home",
+                        element: <PharmacyDashboardHome />
+                    }
+                ]
+            }
+        ]
+    },
 	{
 		path: "/admin",
 		// element: <AdminLayout />,
