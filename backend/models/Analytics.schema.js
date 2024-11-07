@@ -7,6 +7,21 @@ const AnalyticsSchema = new mongoose.Schema({
 		required: true,
 		ref: "Pharmacy",
 	},
+	reportMonth: {
+		type: Number,
+		required: true,
+		min: 1,
+		max: 12,
+	},
+	reportYear: {
+		type: Number,
+		required: true,
+		min: 2000,
+	},
+	reportDate: {
+		type: Date,
+		required: true,
+	},
 	medicationUsageReport: [
 		{
 			medicationId: {
@@ -19,10 +34,6 @@ const AnalyticsSchema = new mongoose.Schema({
 				type: Number,
 				required: true,
 				min: 0,
-			},
-			reportDate: {
-				type: Date,
-				required: true,
 			},
 		},
 	],
@@ -38,10 +49,6 @@ const AnalyticsSchema = new mongoose.Schema({
 				type: Number,
 				required: true,
 				min: 0,
-			},
-			trendAnalysisDate: {
-				type: Date,
-				required: true,
 			},
 		},
 	],

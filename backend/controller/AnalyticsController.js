@@ -1,199 +1,153 @@
-const AnalyticsSchema = require('../models/Analytics.schema');
+const AnalyticsSchema = require("../models/Analytics.schema");
 
 const analyticsController = {
-	// Get all analytics data
-	getAllAnalytics: async (req, res) => {
+	// Get medicine sales by time period
+	getMedicineSalesAnalytics: async (req, res) => {
 		try {
-			const analytics = await AnalyticsSchema.find()
-				.populate("medicationUsageReport.medicationId")
-				.populate("prescriptionTrends.medicationId");
-			res.status(200).json(analytics);
-		} catch (error) {
-			res.status(500).json({ message: "Error fetching analytics", error: error.message });
-		}
-	},
-
-	// Get analytics by pharmacy ID
-	getAnalyticsByPharmacyId: async (req, res) => {
-		try {
+			const { period, year, month } = req.query;
 			const { pharmacyId } = req.params;
+			console.log(req.query);
+			
+			let matchStage = { pharmacyId };
+			let dateField = "$reportDate";
 
-			const analytics = await AnalyticsSchema.find({ pharmacyId })
-				.populate("medicationUsageReport.medicationId")
-				.populate("prescriptionTrends.medicationId");
+			// Date filtering
+			switch(period) {
+				case 'day':
+					matchStage.reportDate = {
+						$gte: new Date(new Date().setHours(0,0,0,0)),
+						$lt: new Date(new Date().setHours(23,59,59,999))
+					};
+					break;
+				case 'month':
+					matchStage.reportMonth = parseInt(month || new Date().getMonth() + 1);
+					matchStage.reportYear = parseInt(year || new Date().getFullYear());
+					break;
+				case 'year':
+					matchStage.reportYear = parseInt(year || new Date().getFullYear());
+					break;
+				case 'last_month':
+					const lastMonth = new Date();
+					lastMonth.setMonth(lastMonth.getMonth() - 1);
+					matchStage.reportMonth = lastMonth.getMonth() + 1;
+					matchStage.reportYear = lastMonth.getFullYear();
+					break;
+			}
 
-			if (!analytics || analytics.length === 0) {
+			const analytics = await AnalyticsSchema.aggregate([
+				{ $match: matchStage },
+				{ $unwind: "$medicationUsageReport" },
+				{
+					$group: {
+						_id: {
+							medicationId: "$medicationUsageReport.medicationId",
+							...(period === 'month' && { day: { $dayOfMonth: dateField } }),
+							...(period === 'year' && { month: "$reportMonth" })
+						},
+						totalSold: { $sum: "$medicationUsageReport.totalSold" }
+					}
+				},
+				{
+					$lookup: {
+						from: "medicines",
+						localField: "_id.medicationId",
+						foreignField: "medicationId",
+						as: "medicationDetails"
+					}
+				},
+				{ $unwind: "$medicationDetails" },
+				{
+					$project: {
+						_id: 0,
+						medicationName: "$medicationDetails.name",
+						totalSold: 1,
+						...(period === 'month' && { day: "$_id.day" }),
+						...(period === 'year' && { month: "$_id.month" })
+					}
+				},
+				{ $sort: { totalSold: -1 } }
+			]);
+
+			if (!analytics.length) {
 				return res.status(404).json({
-					message: `No analytics found for pharmacy with ID: ${pharmacyId}`,
+					message: `No sales data found for the specified period`
 				});
 			}
 
 			res.status(200).json(analytics);
 		} catch (error) {
 			res.status(500).json({
-				message: "Error fetching pharmacy analytics",
-				error: error.message,
+				message: "Error fetching sales analytics",
+				error: error.message
 			});
 		}
 	},
 
-	// Get medication usage report
-	getMedicationUsageReport: async (req, res) => {
+	// Get prescription trends by time period
+	getPrescriptionAnalytics: async (req, res) => {
 		try {
-			const analytics = await AnalyticsSchema.find()
-				.select("medicationUsageReport")
-				.populate("medicationUsageReport.medicationId");
-
-			if (!analytics) {
-				return res.status(404).json({ message: "No medication usage reports found" });
-			}
-
-			res.status(200).json(analytics);
-		} catch (error) {
-			res
-				.status(500)
-				.json({ message: "Error fetching medication usage report", error: error.message });
-		}
-	},
-
-	// Get medication usage report by pharmacy
-	getMedicationUsageReport: async (req, res) => {
-		try {
+			const { period, year, month } = req.query;
 			const { pharmacyId } = req.params;
-			
-			const analytics = await AnalyticsSchema.find({ pharmacyId })
-				.select('medicationUsageReport')
-				.populate('medicationUsageReport.medicationId');
-	
-			if (!analytics || analytics.length === 0) {
-				return res.status(404).json({ 
-					message: `No medication usage reports found for pharmacy: ${pharmacyId}` 
-				});
-			}
-	
-			res.status(200).json(analytics);
-		} catch (error) {
-			res.status(500).json({ 
-				message: 'Error fetching medication usage report', 
-				error: error.message 
-			});
-		}
-	},
 
-	// Get prescription trends
-	getPrescriptionTrends: async (req, res) => {
-		try {
-			const analytics = await AnalyticsSchema.find()
-				.select("prescriptionTrends")
-				.populate("prescriptionTrends.medicationId");
+			let matchStage = { pharmacyId };
+			let dateField = "$reportDate";
 
-			if (!analytics) {
-				return res.status(404).json({ message: "No prescription trends found" });
+			// Similar date filtering as above
+			switch(period) {
+				case 'day':
+					matchStage.reportDate = {
+						$gte: new Date(new Date().setHours(0,0,0,0)),
+						$lt: new Date(new Date().setHours(23,59,59,999))
+					};
+					break;
+				// Add other cases similar to getMedicineSalesAnalytics
 			}
 
-			res.status(200).json(analytics);
-		} catch (error) {
-			res.status(500).json({ message: "Error fetching prescription trends", error: error.message });
-		}
-	},
-
-	// Get prescription trends by pharmacy
-	getPrescriptionTrends: async (req, res) => {
-		try {
-			const { pharmacyId } = req.params;
-	
-			const analytics = await AnalyticsSchema.find({ pharmacyId })
-				.select('prescriptionTrends')
-				.populate('prescriptionTrends.medicationId');
-	
-			if (!analytics || analytics.length === 0) {
-				return res.status(404).json({ 
-					message: `No prescription trends found for pharmacy: ${pharmacyId}` 
-				});
-			}
-	
-			res.status(200).json(analytics);
-		} catch (error) {
-			res.status(500).json({ 
-				message: 'Error fetching prescription trends', 
-				error: error.message 
-			});
-		}
-	},
-
-	// Get analytics by date range
-	getAnalyticsByDateRange: async (req, res) => {
-		try {
-			const { startDate, endDate } = req.query;
-
-			const analytics = await AnalyticsSchema.find({
-				$or: [
-					{
-						"medicationUsageReport.reportDate": {
-							$gte: new Date(startDate),
-							$lte: new Date(endDate),
+			const analytics = await AnalyticsSchema.aggregate([
+				{ $match: matchStage },
+				{ $unwind: "$prescriptionTrends" },
+				{
+					$group: {
+						_id: {
+							medicationId: "$prescriptionTrends.medicationId",
+							...(period === 'month' && { day: { $dayOfMonth: dateField } }),
+							...(period === 'year' && { month: "$reportMonth" })
 						},
-					},
-					{
-						"prescriptionTrends.trendAnalysisDate": {
-							$gte: new Date(startDate),
-							$lte: new Date(endDate),
-						},
-					},
-				],
-			})
-				.populate("medicationUsageReport.medicationId")
-				.populate("prescriptionTrends.medicationId");
+						totalPrescriptions: { $sum: "$prescriptionTrends.totalPrescriptions" }
+					}
+				},
+				{
+					$lookup: {
+						from: "medicines",
+						localField: "_id.medicationId",
+						foreignField: "medicationId",
+						as: "medicationDetails"
+					}
+				},
+				{ $unwind: "$medicationDetails" },
+				{
+					$project: {
+						_id: 0,
+						medicationName: "$medicationDetails.name",
+						totalPrescriptions: 1,
+						...(period === 'month' && { day: "$_id.day" }),
+						...(period === 'year' && { month: "$_id.month" })
+					}
+				},
+				{ $sort: { totalPrescriptions: -1 } }
+			]);
 
 			if (!analytics.length) {
-				return res.status(404).json({ message: "No analytics found for the specified date range" });
-			}
-
-			res.status(200).json(analytics);
-		} catch (error) {
-			res
-				.status(500)
-				.json({ message: "Error fetching analytics by date range", error: error.message });
-		}
-	},
-
-	// Get analytics by date range for specific pharmacy
-	getAnalyticsByDateRange: async (req, res) => {
-		try {
-			const { startDate, endDate } = req.query;
-			const { pharmacyId } = req.params;
-	
-			const analytics = await AnalyticsSchema.find({
-				pharmacyId,
-				$or: [
-					{
-						'medicationUsageReport.reportDate': {
-							$gte: new Date(startDate),
-							$lte: new Date(endDate)
-						}
-					},
-					{
-						'prescriptionTrends.trendAnalysisDate': {
-							$gte: new Date(startDate),
-							$lte: new Date(endDate)
-						}
-					}
-				]
-			})
-			.populate('medicationUsageReport.medicationId')
-			.populate('prescriptionTrends.medicationId');
-	
-			if (!analytics || analytics.length === 0) {
-				return res.status(404).json({ 
-					message: `No analytics found for pharmacy ${pharmacyId} in specified date range` 
+				return res.status(404).json({
+					message: `No prescription data found for the specified period`
 				});
 			}
-	
+
 			res.status(200).json(analytics);
 		} catch (error) {
-			res.status(500).json({ 
-				message: 'Error fetching analytics by date range', 
-				error: error.message 
+			res.status(500).json({
+				message: "Error fetching prescription analytics",
+				error: error.message
 			});
 		}
 	}

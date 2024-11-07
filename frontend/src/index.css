@@ -20,10 +20,13 @@
 }
 
 body {
-  font-family: "Outfit", sans-serif !important;
   font-weight: 400; /* Adjust this value to get the desired weight */
   background-color: var(--background);
   color: var(--text);
+}
+
+h1, h2, h3, h4, h5, h6, body {
+  font-family: "Outfit", sans-serif !important;
 }
 
 button{

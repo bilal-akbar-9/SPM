@@ -1,33 +1,23 @@
 const express = require("express");
 const router = express.Router();
-
-// Controllers
 const analyticsController = require("../controller/AnalyticsController");
 
-// Routes
 /**
- * @route GET /api/analytics
- * @desc Get all analytics data
+ * @route GET /api/analytics/pharmacy/:pharmacyId/sales
+ * @desc Get medicine sales analytics by pharmacy ID
+ * @query period - day|month|year|last_month
+ * @query year - optional year for filtering
+ * @query month - optional month for filtering
  */
-router.get("/", analyticsController.getAllAnalytics);
+router.get("/pharmacy/:pharmacyId/sales", analyticsController.getMedicineSalesAnalytics);
 
 /**
- * @route GET /api/analytics/medication-usage
- * @desc Get medication usage reports
+ * @route GET /api/analytics/pharmacy/:pharmacyId/prescriptions
+ * @desc Get prescription analytics by pharmacy ID
+ * @query period - day|month|year|last_month
+ * @query year - optional year for filtering
+ * @query month - optional month for filtering
  */
-router.get("/medication-usage", analyticsController.getMedicationUsageReport);
+router.get("/pharmacy/:pharmacyId/prescriptions", analyticsController.getPrescriptionAnalytics);
 
-/**
- * @route GET /api/analytics/prescription-trends
- * @desc Get prescription trends
- */
-router.get("/prescription-trends", analyticsController.getPrescriptionTrends);
-
-/**
- * @route GET /api/analytics/date-range
- * @desc Get analytics by date range using query params startDate and endDate
- */
-router.get("/date-range", analyticsController.getAnalyticsByDateRange);
-
-// Export
 module.exports = router;
