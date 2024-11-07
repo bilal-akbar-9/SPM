@@ -17,14 +17,16 @@ const userRoutes = require("./routes/UserRoutes");
 const app = express();
 
 //Middlewares
-app.use(cors(
-    {
-        // origin: process.env.FRONTEND_URL,
-        origin: [process.env.FRONTEND_URL],
-        credentials: true,
-    }
-));
-
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(
+	cors({
+		origin: [process.env.FRONTEND_URL],
+		methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+		allowedHeaders: ["Content-Type", "Authorization"],
+		credentials: true,
+	})
+);
 //DB config
 const connectDB = async () => {
     try {

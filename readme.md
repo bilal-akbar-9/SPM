@@ -49,11 +49,11 @@ The Pharmacy Management and Integration Service module is a microservice designe
 3. Install dependencies in both the directoreis: `npm install`
 4. Set the environment variables:
    - Frontend: Create `.env` file and add:
-     VITE_API_URL=ADD_YOUR_BACKEND_URL
+     VITE_API_URL=http://localhost:3000
    - Backend: Create `.env` file and add:
         PORT=3000
         MONGODB_STRING=mongodb://127.0.0.1:27017/s13-Pharamcy-DB
-        FRONTEND_URL=http://localhost:5174 
+        FRONTEND_URL=http://localhost:5173
 5. Start the backend server: `node server.js`
 6. Start the frontend server: `npm run dev`
 7. Open the application in your browser at `http://localhost:5174`
