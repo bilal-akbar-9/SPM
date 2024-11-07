@@ -18,7 +18,7 @@ const generateAnalyticsData = async () => {
                 { length: faker.number.int({ min: 3, max: 8 }) },
                 () => ({
                     medicationId: faker.helpers.arrayElement(medicineIds),
-                    totalSold: faker.number.int({ min: 50, max: 1000 }),
+                    totalSold: faker.number.int({ min: 50, max: 300 }),
                     reportDate: faker.date.past({ years: 1 })
                 })
             ),
@@ -26,7 +26,7 @@ const generateAnalyticsData = async () => {
                 { length: faker.number.int({ min: 3, max: 8 }) },
                 () => ({
                     medicationId: faker.helpers.arrayElement(medicineIds),
-                    totalPrescriptions: faker.number.int({ min: 10, max: 200 }),
+                    totalPrescriptions: faker.number.int({ min: 10, max: 100 }),
                     trendAnalysisDate: faker.date.past({ years: 1 })
                 })
             )

@@ -1,22 +1,26 @@
+// PrescriptionDataGen.js
 const { faker } = require("@faker-js/faker");
-const { v4: uuidv4 } = require("uuid");
 const PrescriptionSchema = require("../models/Prescription.schema");
 const UserSchema = require("../models/User.schema");
 const MedicineSchema = require("../models/Medicine.schema");
 
 const generatePrescriptionData = async () => {
     try {
-        // Get existing user and medicine IDs
-        const users = await UserSchema.find().select('_id');
+        // Get existing users with their UUIDs
+        const users = await UserSchema.find().select('userId'); // Assuming users have a userId field
         const medicines = await MedicineSchema.find().select('medicationId');
         
-        const userIds = users.map(u => u._id);
+        if (!users.length || !medicines.length) {
+            throw new Error('Please generate users and medicines data first');
+        }
+
+        const userIds = users.map(u => u.userId);
         const medicineIds = medicines.map(m => m.medicationId);
 
         const prescriptions = Array.from({ length: 25 }, () => ({
-            patientId: faker.helpers.arrayElement(userIds),
+            patientId: faker.helpers.arrayElement(userIds), 
             medications: Array.from(
-                { length: faker.number.int({ min: 1, max: 4 }) },
+                { length: faker.number.int({ min: 1, max: 3 }) },
                 () => ({
                     medicationId: faker.helpers.arrayElement(medicineIds),
                     dosage: faker.helpers.arrayElement([
@@ -40,10 +44,7 @@ const generatePrescriptionData = async () => {
             createdAt: faker.date.past({ years: 1 })
         }));
 
-        // Clear existing data
         await PrescriptionSchema.deleteMany({});
-        
-        // Insert new data
         const createdPrescriptions = await PrescriptionSchema.insertMany(prescriptions);
         console.log('Prescription data generated successfully:', createdPrescriptions.length, 'records created');
         return createdPrescriptions;

@@ -1,4 +1,15 @@
 const UserSchema = require('../models/User.schema');
+const { v4: uuidv4 } = require('uuid');
+
+
+const generateShortId = () => {
+	// Get full UUID and remove hyphens
+	const fullUuid = uuidv4().replace(/-/g, "");
+	// Take first 6-8 characters
+	const length = Math.floor(Math.random() * 3) + 6; // Random length between 6-8
+	return fullUuid.substring(0, length).toUpperCase();
+};
+
 
 const userController = {
     getAllUsers: async (req, res) => {
@@ -32,6 +43,7 @@ const userController = {
             }
 
             const newUser = new UserSchema({
+                userId: generateShortId(),
                 username,
                 password, // Store plain text password
                 name,

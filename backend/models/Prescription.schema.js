@@ -4,7 +4,7 @@ const PrescriptionSchema = new mongoose.Schema({
 	patientId: {
 		type: String,
 		required: true,
-		match: /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/, // UUID format
+		match: /^[A-Z0-9]{6,8}$/, // 6-8 characters, uppercase letters and numbers only
 	},
 	medications: [
 		{
