@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 // Controllers
-const analyticsController = require("../controllers/analyticsController");
+const analyticsController = require("../controller/AnalyticsController");
 
 // Routes
 /**
