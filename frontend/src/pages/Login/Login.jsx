@@ -35,7 +35,7 @@ const Login = () => {
 			if (!response.data.pharmacyId) {
 				navigate("/dashboard/home");
 			} else {
-				navigate("/Pharmacy-dashboard");
+				navigate("/dashboard/home");
 			}
 		} catch (error) {
 			toast({
