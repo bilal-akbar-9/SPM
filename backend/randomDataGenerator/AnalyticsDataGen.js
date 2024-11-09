@@ -25,7 +25,25 @@ const generateAnalyticsData = async () => {
                     if (year === currentYear && month > new Date().getMonth() + 1) continue;
 
                     const reportDate = new Date(year, month - 1, 
-                        faker.number.int({ min: 1, max: 28 })); // Random day in month
+                        faker.number.int({ min: 1, max: 28 }));
+
+                    // Generate prescription trends first
+                    const prescriptionTrends = Array.from(
+                        { length: faker.number.int({ min: 3, max: 8 }) },
+                        () => ({
+                            medicationId: faker.helpers.arrayElement(medicineIds),
+                            totalPrescriptions: faker.number.int({ min: 10, max: 50 })
+                        })
+                    );
+
+                    // Calculate total prescriptions processed
+                    // Add 20-30% more than sum of individual prescriptions to account for repeats
+                    const sumPrescriptions = prescriptionTrends.reduce(
+                        (sum, trend) => sum + trend.totalPrescriptions, 0
+                    );
+                    const totalPrescriptionsProcessed = Math.round(
+                        sumPrescriptions * (1 + faker.number.float({ min: 0.2, max: 0.3 }))
+                    );
 
                     const monthlyAnalytics = {
                         pharmacyId,
@@ -36,16 +54,11 @@ const generateAnalyticsData = async () => {
                             { length: faker.number.int({ min: 3, max: 8 }) },
                             () => ({
                                 medicationId: faker.helpers.arrayElement(medicineIds),
-                                totalSold: faker.number.int({ min: 100, max: 1000 }), // Monthly sales
+                                totalSold: faker.number.int({ min: 50, max: 200 })
                             })
                         ),
-                        prescriptionTrends: Array.from(
-                            { length: faker.number.int({ min: 3, max: 8 }) },
-                            () => ({
-                                medicationId: faker.helpers.arrayElement(medicineIds),
-                                totalPrescriptions: faker.number.int({ min: 50, max: 500 }), // Monthly prescriptions
-                            })
-                        )
+                        prescriptionTrends,
+                        totalPrescriptionsProcessed
                     };
                     analytics.push(monthlyAnalytics);
                 }

@@ -150,6 +150,61 @@ const analyticsController = {
 				error: error.message
 			});
 		}
+	},
+	getTotalPrescriptionProcessed: async (req, res) => {
+		try {
+			const { period, year, month } = req.query;
+			const { pharmacyId } = req.params;
+
+			let matchStage = { pharmacyId };
+			let dateField = "$reportDate";
+
+			// Similar date filtering as above
+			switch(period) {
+				case 'day':
+					matchStage.reportDate = {
+						$gte: new Date(new Date().setHours(0,0,0,0)),
+						$lt: new Date(new Date().setHours(23,59,59,999))
+					};
+					break;
+				// Add other cases similar to getMedicineSalesAnalytics
+			}
+
+			const analytics = await AnalyticsSchema.aggregate([
+				{ $match: matchStage },
+				{
+					$group: {
+						_id: {
+							...(period === 'month' && { day: { $dayOfMonth: dateField } }),
+							...(period === 'year' && { month: "$reportMonth" })
+						},
+						totalPrescriptionsProcessed: { $sum: "$totalPrescriptionsProcessed" }
+					}
+				},
+				{
+					$project: {
+						_id: 0,
+						totalPrescriptionsProcessed: 1,
+						...(period === 'month' && { day: "$_id.day" }),
+						...(period === 'year' && { month: "$_id.month" })
+					}
+				},
+				{ $sort: { totalPrescriptionsProcessed: -1 } }
+			]);
+
+			if (!analytics.length) {
+				return res.status(404).json({
+					message: `No prescription data found for the specified period`
+				});
+			}
+
+			res.status(200).json(analytics);
+		} catch (error) {
+			res.status(500).json({
+				message: "Error fetching prescription analytics",
+				error: error.message
+			});
+		}
 	}
 };
 

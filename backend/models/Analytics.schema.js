@@ -52,6 +52,11 @@ const AnalyticsSchema = new mongoose.Schema({
 			},
 		},
 	],
+	totalPrescriptionsProcessed: {
+		type: Number,
+		required: true,
+		min: 0,
+	},
 });
 
 const model = mongoose.model("Analytics", AnalyticsSchema);
