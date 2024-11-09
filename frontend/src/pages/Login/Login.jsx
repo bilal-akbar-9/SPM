@@ -33,7 +33,7 @@ const Login = () => {
 			});
 			// If the user has a valid pharmacyId
 			if (!response.data.pharmacyId) {
-				navigate("/Pharmacy-Selection");
+				navigate("/dashboard/home");
 			} else {
 				navigate("/Pharmacy-dashboard");
 			}
