@@ -1,20 +1,39 @@
-// Analytics.jsx 
-import { useState, useEffect, useRef } from 'react';
-import { 
-  Box, Container, VStack, HStack, Select, 
-  Heading, useToast, Grid, Divider 
-} from '@chakra-ui/react';
-import axios from 'axios';
+// Analytics.jsx
+import { useState, useEffect, useRef } from "react";
 import {
-  LineChart, Line, BarChart, Bar, XAxis, 
-  YAxis, CartesianGrid, Tooltip, Legend,
-  ResponsiveContainer
-} from 'recharts';
-import { useReactToPrint } from 'react-to-print';
+	Box,
+	Container,
+	VStack,
+	HStack,
+	Select,
+	Heading,
+	useToast,
+	Grid,
+	Divider,
+} from "@chakra-ui/react";
+import axios from "axios";
+import {
+	LineChart,
+	Line,
+	BarChart,
+	Bar,
+	AreaChart,
+	Area,
+	XAxis,
+	YAxis,
+	CartesianGrid,
+	Tooltip,
+	Legend,
+	ResponsiveContainer,
+} from "recharts";
+import { useReactToPrint } from "react-to-print";
 
 const Analytics = () => {
-  const [topMedicines, setTopMedicines] = useState([]);
+	const [topMedicines, setTopMedicines] = useState([]);
+	const [topMonthlyPrescriptions, setTopMonthlyPrescriptions] = useState([]);
 	const [topPrescriptions, setTopPrescriptions] = useState([]);
+
+	const [prescriptionProcessed, setPrescriptionProcessed] = useState([]);
 	const [medicationUsage, setMedicationUsage] = useState([]);
 	const [prescriptionTrends, setPrescriptionTrends] = useState([]);
 	const [period, setPeriod] = useState("month");
@@ -26,17 +45,23 @@ const Analytics = () => {
 
 	const fetchTopData = async () => {
 		try {
-			const [topMedRes, topPresRes] = await Promise.all([
+			const currentDate = new Date();
+			const [topMedRes, topPresRes, prescProcRes] = await Promise.all([
 				axios.get(`/pharmacy-api/analytics/pharmacy/${pharmacyId}/sales`, {
 					params: { period: "last_month" },
 				}),
 				axios.get(`/pharmacy-api/analytics/pharmacy/${pharmacyId}/prescriptions`, {
 					params: { period: "last_month" },
 				}),
+				axios.get(`/pharmacy-api/analytics/pharmacy/${pharmacyId}/prescriptionProcessed`, {
+					params: { period: "year", year: currentDate.getFullYear() },
+				}),
 			]);
 
+			// Data comes pre-sorted from backend, just slice top 10
 			setTopMedicines(topMedRes.data.slice(0, 10));
 			setTopPrescriptions(topPresRes.data.slice(0, 10));
+			setTopMonthlyPrescriptions(prescProcRes.data.slice(0, 10));
 		} catch (error) {
 			toast({
 				title: "Error fetching top charts",
@@ -50,17 +75,21 @@ const Analytics = () => {
 	const fetchData = async () => {
 		try {
 			setIsLoading(true);
-			const [usageRes, trendsRes] = await Promise.all([
+			const [usageRes, trendsRes, prescRes] = await Promise.all([
 				axios.get(`/pharmacy-api/analytics/pharmacy/${pharmacyId}/sales`, {
 					params: { period, year, month },
 				}),
 				axios.get(`/pharmacy-api/analytics/pharmacy/${pharmacyId}/prescriptions`, {
 					params: { period, year, month },
 				}),
+				axios.get(`/pharmacy-api/analytics/pharmacy/${pharmacyId}/prescriptionProcessed`, {
+					params: { period, year, month },
+				}),
 			]);
 
 			setMedicationUsage(usageRes.data);
 			setPrescriptionTrends(trendsRes.data);
+			setPrescriptionProcessed(prescRes.data);
 		} catch (error) {
 			toast({
 				title: "Error fetching analytics",
@@ -71,14 +100,14 @@ const Analytics = () => {
 		} finally {
 			setIsLoading(false);
 		}
-  };
-  
-  useEffect(() => {
+	};
+
+	useEffect(() => {
 		fetchTopData();
 	}, []);
 
 	useEffect(() => {
-    fetchData();
+		fetchData();
 	}, [period, year, month]);
 
 	const formatMedicationData = (data) => {
@@ -99,6 +128,22 @@ const Analytics = () => {
 		}));
 	};
 
+	const formatPrescriptionProcessed = (data) => {
+		if (!data.length) return [];
+		return data.map((item) => ({
+			// Format date based on period
+			date:
+				period === "year"
+					? `${new Date(0, item.month - 1).toLocaleString("default", { month: "short" })} ${year}`
+					: period === "month"
+					? `Day ${item.day}`
+					: new Date(item.reportDate).toLocaleDateString("en-US", {
+							month: "short",
+							day: "numeric",
+					  }),
+			total: item.totalPrescriptionsProcessed,
+		}));
+	};
 	return (
 		<Container maxW="container.xl">
 			<VStack spacing={8} align="stretch">
@@ -132,6 +177,22 @@ const Analytics = () => {
 								<Tooltip />
 								<Legend />
 								<Bar dataKey="total" name="Total Prescriptions" fill="var(--accent)" />
+							</BarChart>
+						</ResponsiveContainer>
+					</Box>
+
+					<Box bg="white" p={6} borderRadius="xl" boxShadow="lg">
+						<Heading size="md" mb={4}>
+							Top Monthly Prescriptions Processed
+						</Heading>
+						<ResponsiveContainer width="100%" height={300}>
+							<BarChart data={formatPrescriptionProcessed(topMonthlyPrescriptions)}>
+								<CartesianGrid strokeDasharray="3 3" />
+								<XAxis dataKey="date" />
+								<YAxis />
+								<Tooltip />
+								<Legend />
+								<Bar dataKey="total" name="Total Prescriptions" fill="var(--primary)" />
 							</BarChart>
 						</ResponsiveContainer>
 					</Box>
@@ -209,6 +270,30 @@ const Analytics = () => {
 									dot={{ fill: "var(--accent)" }}
 								/>
 							</LineChart>
+						</ResponsiveContainer>
+					</Box>
+
+					<Box bg="white" p={6} borderRadius="xl" boxShadow="lg">
+						<Heading size="md" mb={4}>
+							Prescriptions Processed Over Time
+						</Heading>
+						<ResponsiveContainer width="100%" height={300}>
+							<AreaChart data={formatPrescriptionProcessed(prescriptionProcessed)}>
+								<CartesianGrid strokeDasharray="3 3" />
+								<XAxis dataKey="date" />
+								<YAxis />
+								<Tooltip />
+								<Legend />
+								<Area
+									type="monotone"
+									dataKey="total"
+									name="Prescriptions Processed"
+									fill="var(--primary)"
+									fillOpacity={0.3}
+									stroke="var(--accent)"
+									strokeWidth={2}
+								/>
+							</AreaChart>
 						</ResponsiveContainer>
 					</Box>
 				</Grid>

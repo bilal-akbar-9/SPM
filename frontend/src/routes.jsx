@@ -7,7 +7,6 @@ import Register from "./pages/Register/Register";
 // import Layout from "./components/Layout";
 // import Home from "./pages/Home/Home";
 import Inventory from "./pages/Inventory/Inventory";
-import Prescription from "./pages/Prescription/Prescription";
 import Billing from "./pages/Billing/Billings";
 import Analytics from "./pages/Analytics/Analytics";
 import PharmacySelection from "./pages/PharmacySelection";
@@ -15,6 +14,7 @@ import PharmacyDashboardHome from "./pages/PharmacyDashboardHome";
 
 //Layouts
 import HomeLayout from "./pages/HomeLayout";
+import PrescriptionManagement from "./pages/Prescription/PrescriptionManagement";
 
 
 // import AdminLayout from "./components/AdminLayout/AdminLayout";
@@ -48,7 +48,7 @@ const routes = createBrowserRouter([
                     },
                     {
                         path: "prescriptions",
-                        element: <Prescription />
+                        element: <PrescriptionManagement />
                     },
                     {
                         path: "billing",

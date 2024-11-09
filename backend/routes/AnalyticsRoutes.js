@@ -3,7 +3,7 @@ const router = express.Router();
 const analyticsController = require("../controller/AnalyticsController");
 
 /**
- * @route GET /api/analytics/pharmacy/:pharmacyId/sales
+ * @route GET /pharmacy-api/analytics/pharmacy/:pharmacyId/sales
  * @desc Get medicine sales analytics by pharmacy ID
  * @query period - day|month|year|last_month
  * @query year - optional year for filtering
@@ -12,7 +12,7 @@ const analyticsController = require("../controller/AnalyticsController");
 router.get("/pharmacy/:pharmacyId/sales", analyticsController.getMedicineSalesAnalytics);
 
 /**
- * @route GET /api/analytics/pharmacy/:pharmacyId/prescriptions
+ * @route GET /pharmacy-api/analytics/pharmacy/:pharmacyId/prescriptions
  * @desc Get prescription analytics by pharmacy ID
  * @query period - day|month|year|last_month
  * @query year - optional year for filtering
@@ -20,4 +20,12 @@ router.get("/pharmacy/:pharmacyId/sales", analyticsController.getMedicineSalesAn
  */
 router.get("/pharmacy/:pharmacyId/prescriptions", analyticsController.getPrescriptionAnalytics);
 
+/**
+ * @route GET /pharmacy-api/analytics/pharmacy/:pharmacyId/prescriptionProcessed
+ * @desc Get prescription processed analytics by pharmacy ID
+ * @query period - day|month|year|last_month
+ * 
+ */
+
+router.get("/pharmacy/:pharmacyId/prescriptionProcessed", analyticsController.getTotalPrescriptionProcessed);
 module.exports = router;

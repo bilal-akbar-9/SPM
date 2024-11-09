@@ -6,7 +6,6 @@ const analyticsController = {
 		try {
 			const { period, year, month } = req.query;
 			const { pharmacyId } = req.params;
-			console.log(req.query);
 			
 			let matchStage = { pharmacyId };
 			let dateField = "$reportDate";
@@ -167,7 +166,13 @@ const analyticsController = {
 						$lt: new Date(new Date().setHours(23,59,59,999))
 					};
 					break;
-				// Add other cases similar to getMedicineSalesAnalytics
+				case 'month':
+					matchStage.reportMonth = parseInt(month || new Date().getMonth() + 1);
+					matchStage.reportYear = parseInt(year || new Date().getFullYear());
+					break;
+				case 'year':
+					matchStage.reportYear = parseInt(year || new Date().getFullYear());
+					break;
 			}
 
 			const analytics = await AnalyticsSchema.aggregate([
@@ -189,7 +194,6 @@ const analyticsController = {
 						...(period === 'year' && { month: "$_id.month" })
 					}
 				},
-				{ $sort: { totalPrescriptionsProcessed: -1 } }
 			]);
 
 			if (!analytics.length) {
