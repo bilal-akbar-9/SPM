@@ -45,9 +45,8 @@ const Analytics = () => {
 	const { user } = useUserStore();
 	const { selectedPharmacy } = usePharmacyStore();
 	const pharmacyId =
-		user.role === "admin" ? selectedPharmacy.pharmacyId : user?.pharmacyId.pharmacyId;
-	console.log(pharmacyId, selectedPharmacy);
-
+		user.role === "admin" ? selectedPharmacy.pharmacyId : user?.pharmacyId;
+	console.log(user);
 	const [staticFinancials, setStaticFinancials] = useState({});
 	const [topMedicines, setTopMedicines] = useState([]);
 	const [topMonthlyPrescriptions, setTopMonthlyPrescriptions] = useState([]);
@@ -279,7 +278,7 @@ const Analytics = () => {
 	return (
 		<>
 			{user.role === "admin" && <PharmacySelection />}
-			{Object.keys(selectedPharmacy).length > 0  && (
+			{Object.keys(selectedPharmacy).length > 0 && (
 				<div>
 					<HStack justify="space-between" className="mb-10 mx-4">
 						<Heading color="var(--text)">Analytics Dashboard</Heading>

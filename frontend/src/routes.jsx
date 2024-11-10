@@ -17,6 +17,10 @@ import PrescriptionManagement from "./pages/Prescription/PrescriptionManagement"
 
 // Protected Route
 import ProtectedRoute from "./components/ProtectedRoute";
+import UserManagement from "./pages/Admin/UserManagement/UserManagement";
+
+
+
 import ErrorPage from "./pages/ErrorPage";
 
 
@@ -65,7 +69,7 @@ const routes = createBrowserRouter([
 						path: "users",
 						element: (
 							<ProtectedRoute requiredRole="admin">
-								{/* <UserManagement /> */}
+								<UserManagement />
 							</ProtectedRoute>
 						),
 					},

@@ -131,17 +131,6 @@ const Login = () => {
 							</VStack>
 						</form>
 					</Box>
-
-					<Text textAlign="center">
-						Don't have an account?{" "}
-						<Button
-							variant="link"
-							color="var(--accent)"
-							onClick={() => navigate("/register")}
-							_hover={{ color: "var(--primary)" }}>
-							Register here
-						</Button>
-					</Text>
 				</VStack>
 			</Container>
 		</Box>
