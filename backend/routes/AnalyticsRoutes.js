@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const analyticsController = require("../controller/AnalyticsController");
+const { VerifyToken } = require("../utils/Authentication");
 
 /**
  * @route GET /pharmacy-api/analytics/pharmacy/:pharmacyId/sales
@@ -9,7 +10,7 @@ const analyticsController = require("../controller/AnalyticsController");
  * @query year - optional year for filtering
  * @query month - optional month for filtering
  */
-router.get("/pharmacy/:pharmacyId/sales", analyticsController.getMedicineSalesAnalytics);
+router.get("/pharmacy/:pharmacyId/sales", VerifyToken, analyticsController.getMedicineSalesAnalytics);
 
 /**
  * @route GET /pharmacy-api/analytics/pharmacy/:pharmacyId/prescriptions
@@ -18,7 +19,7 @@ router.get("/pharmacy/:pharmacyId/sales", analyticsController.getMedicineSalesAn
  * @query year - optional year for filtering
  * @query month - optional month for filtering
  */
-router.get("/pharmacy/:pharmacyId/prescriptions", analyticsController.getPrescriptionAnalytics);
+router.get("/pharmacy/:pharmacyId/prescriptions", VerifyToken, analyticsController.getPrescriptionAnalytics);
 
 /**
  * @route GET /pharmacy-api/analytics/pharmacy/:pharmacyId/prescriptionProcessed
@@ -27,7 +28,7 @@ router.get("/pharmacy/:pharmacyId/prescriptions", analyticsController.getPrescri
  * 
  */
 
-router.get("/pharmacy/:pharmacyId/prescriptionProcessed", analyticsController.getTotalPrescriptionProcessed);
+router.get("/pharmacy/:pharmacyId/prescriptionProcessed", VerifyToken, analyticsController.getTotalPrescriptionProcessed);
 
 /**
  * @route GET /pharmacy-api/analytics/pharmacy/:pharmacyId/financials
@@ -35,6 +36,6 @@ router.get("/pharmacy/:pharmacyId/prescriptionProcessed", analyticsController.ge
  * @query period - day|month|year|last_month
  */
 
-router.get("/pharmacy/:pharmacyId/financials", analyticsController.getFinancialAnalytics);
+router.get("/pharmacy/:pharmacyId/financials", VerifyToken, analyticsController.getFinancialAnalytics);
 
 module.exports = router;

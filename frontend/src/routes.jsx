@@ -9,7 +9,6 @@ import Register from "./pages/Register/Register";
 import Inventory from "./pages/Inventory/Inventory";
 import Billing from "./pages/Billing/Billings";
 import Analytics from "./pages/Analytics/Analytics";
-import PharmacySelection from "./pages/PharmacySelection";
 import PharmacyDashboardHome from "./pages/PharmacyDashboardHome";
 
 //Layouts
@@ -37,10 +36,6 @@ const routes = createBrowserRouter([
 			{
 				path: "register",
 				element: <Register />,
-			},
-			{
-				path: "pharmacy-selection",
-				element: <PharmacySelection />,
 			},
 			{
 				path: "dashboard",
