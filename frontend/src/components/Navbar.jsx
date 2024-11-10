@@ -1,28 +1,44 @@
-import { Box, VStack, Text, Link, Icon, Flex} from "@chakra-ui/react";
+import { Box, VStack, Text, Link, Icon, Flex } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
 import { FaCog, FaSignOutAlt } from "react-icons/fa";
-import { useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
 	FaHome,
 	FaPrescriptionBottle,
 	FaChartBar,
 	FaBoxes,
 	FaFileInvoiceDollar,
+	FaUserCog,
+	FaStore,
 } from "react-icons/fa";
+import useUserStore from "../hooks/useUserStore";
+import Cookies from "js-cookie";
 
 const Navbar = () => {
 	const navigate = useNavigate();
 
+	const { user, setUser } = useUserStore();
+	const isAdmin = user.role === "admin";
+
 	const handleLogout = () => {
-		localStorage.clear();
+		Cookies.remove("token");
+		setUser({});
 		navigate("/");
 	};
 	const menuItems = [
-		{ icon: FaHome, text: "Dashboard", path: "/dashboard/home" },
-		{ icon: FaBoxes, text: "Inventory", path: "/dashboard/inventory" },
-		{ icon: FaPrescriptionBottle, text: "Prescriptions", path: "/dashboard/prescriptions" },
-		{ icon: FaFileInvoiceDollar, text: "Billing", path: "/dashboard/billing" },
-		{ icon: FaChartBar, text: "Analytics", path: "/dashboard/analytics" },
+		{ icon: FaHome, text: "Dashboard", path: "/dashboard/home", show: true },
+		{ icon: FaBoxes, text: "Inventory", path: "/dashboard/inventory", show: true },
+		{
+			icon: FaPrescriptionBottle,
+			text: "Prescriptions",
+			path: "/dashboard/prescriptions",
+			show: true,
+		},
+		{ icon: FaFileInvoiceDollar, text: "Billing", path: "/dashboard/billing", show: true },
+		{ icon: FaChartBar, text: "Analytics", path: "/dashboard/analytics", show: true },
+		//Add for User Management and Pharmacy Management
+		{ icon: FaUserCog, text: "User Management", path: "/dashboard/users", show: isAdmin },
+		{ icon: FaStore, text: "Pharmacy Management", path: "/dashboard/pharmacies", show: isAdmin },
 	];
 
 	return (
@@ -53,56 +69,36 @@ const Navbar = () => {
 					</Text>
 				</Box>
 
-				{menuItems.map((item, index) => (
-					<Link
-						key={index}
-						as={RouterLink}
-						to={item.path}
-						display="flex"
-						alignItems="center"
-						px="6"
-						py="3"
-						textDecor="none"
-						color={location.pathname === item.path ? "var(--primary)" : "var(--text)"}
-						bg={location.pathname === item.path ? "var(--background)" : "transparent"}
-						borderLeft="4px solid"
-						borderColor={location.pathname === item.path ? "var(--accent)" : "transparent"}
-						_hover={{
-							bg: "var(--background)",
-							color: "var(--primary)",
-							borderLeft: "4px solid",
-							borderColor: "var(--accent)",
-						}}
-						transition="all 0.2s">
-						<Icon as={item.icon} boxSize="5" color="inherit" />
-						<Text ml="3" fontSize="sm">
-							{item.text}
-						</Text>
-					</Link>
-				))}
+				{menuItems
+					.filter((item) => item.show)
+					.map((item, index) => (
+						<Link
+							key={index}
+							as={RouterLink}
+							to={item.path}
+							display="flex"
+							alignItems="center"
+							px="6"
+							py="3"
+							textDecor="none"
+							color={location.pathname === item.path ? "var(--primary)" : "var(--text)"}
+							bg={location.pathname === item.path ? "var(--background)" : "transparent"}
+							borderLeft="4px solid"
+							borderColor={location.pathname === item.path ? "var(--accent)" : "transparent"}
+							_hover={{
+								bg: "var(--background)",
+								color: "var(--primary)",
+								borderLeft: "4px solid",
+								borderColor: "var(--accent)",
+							}}
+							transition="all 0.2s">
+							<Icon as={item.icon} boxSize="5" color="inherit" />
+							<Text ml="3" fontSize="sm">
+								{item.text}
+							</Text>
+						</Link>
+					))}
 				<Box mt="auto" borderTop="1px" borderColor="gray.200">
-					<Link
-						as={RouterLink}
-						to="/home/settings"
-						display="flex"
-						alignItems="center"
-						px="6"
-						py="3"
-						textDecor="none"
-						color="var(--text)"
-						_hover={{
-							bg: "var(--background)",
-							color: "var(--primary)",
-							borderLeft: "4px solid",
-							borderColor: "var(--accent)",
-						}}
-						transition="all 0.2s">
-						<Icon as={FaCog} boxSize="5" />
-						<Text ml="3" fontSize="sm">
-							Settings
-						</Text>
-					</Link>
-
 					<Link
 						onClick={handleLogout}
 						display="flex"

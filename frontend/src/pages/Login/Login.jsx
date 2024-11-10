@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
 	Box,
 	Button,
@@ -13,19 +13,23 @@ import {
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import Cookies from "js-cookie";
+import useUserStore from "../../hooks/useUserStore";
 
 const Login = () => {
 	const [credentials, setCredentials] = useState({ username: "", password: "" });
 	const [isLoading, setIsLoading] = useState(false);
 	const toast = useToast();
 	const navigate = useNavigate();
+	const {setUser} = useUserStore();
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		setIsLoading(true);
 		try {
 			const response = await axios.post("/pharmacy-api/users/login", credentials);
-			localStorage.setItem("user", JSON.stringify(response.data));
+			Cookies.set("token", response.data.token);
+			setUser(response.data.user);
 			toast({
 				title: "Login successful",
 				status: "success",
@@ -48,6 +52,12 @@ const Login = () => {
 			setIsLoading(false);
 		}
 	};
+
+	useEffect(() => {
+		if (Cookies.get("token")) {
+			navigate("/dashboard/home");
+		}
+	}, []);
 
 	return (
 		<Box
