@@ -28,4 +28,13 @@ router.get("/pharmacy/:pharmacyId/prescriptions", analyticsController.getPrescri
  */
 
 router.get("/pharmacy/:pharmacyId/prescriptionProcessed", analyticsController.getTotalPrescriptionProcessed);
+
+/**
+ * @route GET /pharmacy-api/analytics/pharmacy/:pharmacyId/financials
+ * @desc Get financial analytics by pharmacy ID
+ * @query period - day|month|year|last_month
+ */
+
+router.get("/pharmacy/:pharmacyId/financials", analyticsController.getFinancialAnalytics);
+
 module.exports = router;
