@@ -16,6 +16,10 @@ import PharmacyDashboardHome from "./pages/PharmacyDashboardHome";
 import HomeLayout from "./pages/HomeLayout";
 import PrescriptionManagement from "./pages/Prescription/PrescriptionManagement";
 
+// Protected Route
+import ProtectedRoute from "./components/ProtectedRoute";
+import ErrorPage from "./pages/ErrorPage";
+
 
 // import AdminLayout from "./components/AdminLayout/AdminLayout";
 // import AdminDashboard from "./pages/AdminDashboard/AdminDashboard";
@@ -24,62 +28,68 @@ import PrescriptionManagement from "./pages/Prescription/PrescriptionManagement"
 
 const routes = createBrowserRouter([
 	{
-        path: "/",
-        children: [
-            {
-                path: "/",
-                element: <Login />
-            },
-            {
-                path: "register",
-                element: <Register />
-            },
-            {
-                path: "pharmacy-selection",
-                element: <PharmacySelection />
-            },
-            {
-                path: "dashboard",
-                element: <HomeLayout />,
-                children: [
-                    {
-                        path: "inventory",
-                        element: <Inventory />
-                    },
-                    {
-                        path: "prescriptions",
-                        element: <PrescriptionManagement />
-                    },
-                    {
-                        path: "billing",
-                        element: <Billing />
-                    },
-                    {
-                        path: "analytics",
-                        element: <Analytics />
-                    },
-                    {
-                        path: "home",
-                        element: <PharmacyDashboardHome />
-                    }
-                ]
-            }
-        ]
-    },
-	{
-		path: "/admin",
-		// element: <AdminLayout />,
+		path: "/",
 		children: [
 			{
-				path: "",
-				// element: <AdminDashboard />,
+				path: "/",
+				element: <Login />,
 			},
 			{
-				path: "settings",
-				// element: <SettingsPage />,
+				path: "register",
+				element: <Register />,
+			},
+			{
+				path: "pharmacy-selection",
+				element: <PharmacySelection />,
+			},
+			{
+				path: "dashboard",
+				element: <HomeLayout />,
+				children: [
+					{
+						path: "inventory",
+						element: <Inventory />,
+					},
+					{
+						path: "prescriptions",
+						element: <PrescriptionManagement />,
+					},
+					{
+						path: "billing",
+						element: <Billing />,
+					},
+					{
+						path: "analytics",
+						element: <Analytics />,
+					},
+					{
+						path: "home",
+						element: <PharmacyDashboardHome />,
+					},
+					{
+						path: "users",
+						element: (
+							<ProtectedRoute requiredRole="admin">
+								{/* <UserManagement /> */}
+							</ProtectedRoute>
+						),
+					},
+					{
+						path: "pharmacies",
+						element: (
+							<ProtectedRoute requiredRole="admin">
+								{/* <PharmacyManagement /> */}
+							</ProtectedRoute>
+						),
+					},
+				],
 			},
 		],
 	},
+	{
+		path: "*",
+		element: <ErrorPage />,
+	}
 ]);
 
 export default routes;
