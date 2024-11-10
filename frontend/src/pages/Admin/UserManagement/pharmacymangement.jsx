@@ -8,8 +8,10 @@ const PharmacyManagement = () => {
     const [pharmacies, setPharmacies] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false); // New state for add modal
     const [selectedPharmacy, setSelectedPharmacy] = useState(null);
     const [updatedPharmacy, setUpdatedPharmacy] = useState({});
+    const [newPharmacy, setNewPharmacy] = useState({ name: "", location: "", contactInfo: "" }); // State for new pharmacy
     const toast = useToast();
 
     useEffect(() => {
@@ -116,6 +118,44 @@ const PharmacyManagement = () => {
         }
     };
 
+    // Handle new pharmacy form changes
+    const handleNewPharmacyChange = (e) => {
+        const { name, value } = e.target;
+        setNewPharmacy((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const addNewPharmacy = async () => {
+        try {
+            const response = await axios.post(
+                "/pharmacy-api/pharmacies/",
+                newPharmacy,
+                {
+                    headers: { Authorization: `Bearer ${Cookies.get("token")}` },
+                }
+            );
+
+            // Add the new pharmacy to the state
+            setPharmacies((prev) => [...prev, response.data]);
+
+            setIsAddModalOpen(false);
+            setNewPharmacy({ name: "", location: "", contactInfo: "" }); // Reset form fields
+
+            toast({
+                title: "Pharmacy added",
+                description: "The pharmacy has been successfully added.",
+                status: "success",
+                duration: 3000,
+            });
+        } catch (error) {
+            toast({
+                title: "Error adding pharmacy",
+                description: error.response?.data?.message || "Something went wrong",
+                status: "error",
+                duration: 3000,
+            });
+        }
+    };
+
     if (loading) return <Spinner color="#319795" size="xl" />;
 
     return (
@@ -123,6 +163,16 @@ const PharmacyManagement = () => {
             <Text fontSize="3xl" fontWeight="bold" color="#00191e" mb={6}>
                 Pharmacy Management
             </Text>
+            
+            {/* Add Pharmacy Button */}
+            <Button
+                colorScheme="teal"
+                onClick={() => setIsAddModalOpen(true)}
+                mb={6}
+            >
+                Add New Pharmacy
+            </Button>
+
             <VStack spacing={5} align="stretch">
                 {pharmacies.length > 0 ? (
                     pharmacies.map((pharmacy) => (
@@ -196,6 +246,46 @@ const PharmacyManagement = () => {
                             Save Changes
                         </Button>
                         <Button variant="ghost" onClick={closeEditModal}>
+                            Cancel
+                        </Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
+
+            {/* Add New Pharmacy Modal */}
+            <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)}>
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>Add New Pharmacy</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody>
+                        <Input
+                            placeholder="Pharmacy Name"
+                            value={newPharmacy.name}
+                            name="name"
+                            onChange={handleNewPharmacyChange}
+                            mb={3}
+                        />
+                        <Input
+                            placeholder="Location"
+                            value={newPharmacy.location}
+                            name="location"
+                            onChange={handleNewPharmacyChange}
+                            mb={3}
+                        />
+                        <Input
+                            placeholder="Contact Info"
+                            value={newPharmacy.contactInfo}
+                            name="contactInfo"
+                            onChange={handleNewPharmacyChange}
+                        />
+                    </ModalBody>
+
+                    <ModalFooter>
+                        <Button colorScheme="blue" mr={3} onClick={addNewPharmacy}>
+                            Add Pharmacy
+                        </Button>
+                        <Button variant="ghost" onClick={() => setIsAddModalOpen(false)}>
                             Cancel
                         </Button>
                     </ModalFooter>
