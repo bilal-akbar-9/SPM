@@ -14,7 +14,7 @@ import PharmacyDashboardHome from "./pages/PharmacyDashboardHome";
 //Layouts
 import HomeLayout from "./pages/HomeLayout";
 import PrescriptionManagement from "./pages/Prescription/PrescriptionManagement";
-
+import PharmacyManagement from "./pages/Admin/UserManagement/pharmacymangement";
 // Protected Route
 import ProtectedRoute from "./components/ProtectedRoute";
 import UserManagement from "./pages/Admin/UserManagement/UserManagement";
@@ -77,7 +77,7 @@ const routes = createBrowserRouter([
 						path: "pharmacies",
 						element: (
 							<ProtectedRoute requiredRole="admin">
-								{/* <PharmacyManagement /> */}
+								{ <PharmacyManagement />}
 							</ProtectedRoute>
 						),
 					},

@@ -6,6 +6,7 @@ const pharmacyController = {
     getAllPharmacies: async (req, res) => {
         try {
             const pharmacies = await PharmacySchema.find();
+            
             res.status(200).json(pharmacies);
         } catch (error) {
             res.status(500).json({ message: 'Error fetching pharmacies', error: error.message });
@@ -67,6 +68,7 @@ const pharmacyController = {
 
     // Delete pharmacy
     deletePharmacy: async (req, res) => {
+        
         try {
             const pharmacy = await PharmacySchema.findOneAndDelete({ pharmacyId: req.params.id });
             if (!pharmacy) {
