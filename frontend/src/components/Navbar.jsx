@@ -41,7 +41,7 @@ const Navbar = () => {
 				justifyContent="center"
 				borderBottom="1px"
 				borderColor="gray.200">
-				<Text fontSize="xl" fontWeight="bold" color="var(--chakra-primary)">
+				<Text fontSize="xl" fontWeight="bold" color="var(--primary)">
 					Pharmacy
 				</Text>
 			</Flex>

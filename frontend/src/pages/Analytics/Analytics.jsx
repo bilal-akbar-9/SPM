@@ -11,6 +11,7 @@ import {
 	Grid,
 	Divider,
 	Text,
+	Button,
 } from "@chakra-ui/react";
 import axios from "axios";
 import {
@@ -24,20 +25,28 @@ import {
 	Tooltip,
 	Legend,
 	ResponsiveContainer,
+	PieChart,
+	Pie,
+	Cell,
 } from "recharts";
+import { FiPrinter } from "react-icons/fi";
 import { useReactToPrint } from "react-to-print";
 
 const Analytics = () => {
-	const [staticFinancials, setStaticFinancials] = useState({});
-	const [dynamicFinancials, setDynamicFinancials] = useState({});
+	// Ref for printing
+	const contentRef = useRef();
 
+	const [staticFinancials, setStaticFinancials] = useState({});
 	const [topMedicines, setTopMedicines] = useState([]);
 	const [topMonthlyPrescriptions, setTopMonthlyPrescriptions] = useState([]);
 	const [topPrescriptions, setTopPrescriptions] = useState([]);
+	const [medicineWiseSales, setMedicineWiseSales] = useState([]);
 
 	const [prescriptionProcessed, setPrescriptionProcessed] = useState([]);
 	const [medicationUsage, setMedicationUsage] = useState([]);
 	const [prescriptionTrends, setPrescriptionTrends] = useState([]);
+	const [dynamicFinancials, setDynamicFinancials] = useState({});
+	const [dynamicMedicineWiseSales, setDynamicMedicineWiseSales] = useState([]);
 	const [period, setPeriod] = useState("month");
 	const [year, setYear] = useState(new Date().getFullYear());
 	const [month, setMonth] = useState(new Date().getMonth() + 1);
@@ -60,7 +69,11 @@ const Analytics = () => {
 					params: { period: "year", year: currentDate.getFullYear() },
 				}),
 				axios.get(`/pharmacy-api/analytics/pharmacy/${pharmacyId}/financials`, {
-					params: { period: "month", year: currentMonth.getFullYear(), month: currentMonth.getMonth() + 1 },
+					params: {
+						period: "month",
+						year: currentMonth.getFullYear(),
+						month: currentMonth.getMonth() + 1,
+					},
 				}),
 			]);
 
@@ -73,6 +86,7 @@ const Analytics = () => {
 					.slice(0, 10)
 			);
 			setStaticFinancials(calculateFinancialMetrics(staticFinRes.data));
+			setMedicineWiseSales(staticFinRes.data.medicineWiseSales);
 		} catch (error) {
 			toast({
 				title: "Error fetching top charts",
@@ -117,6 +131,7 @@ const Analytics = () => {
 			setPrescriptionTrends(trendsRes.data);
 			setPrescriptionProcessed(prescRes.data);
 			setDynamicFinancials(calculateFinancialMetrics(financialRes.data));
+			setDynamicMedicineWiseSales(financialRes.data.medicineWiseSales);
 		} catch (error) {
 			console.error("Error fetching analytics:", error);
 			// Optionally show error message to user
@@ -213,199 +228,102 @@ const Analytics = () => {
 		const percentageChange = ((metric - previousMetric) / previousMetric) * 100;
 		return percentageChange.toFixed(2);
 	};
+	const reactToPrintFn = useReactToPrint({
+		contentRef,
+		documentTitle: "Analytics Report",
+		pageStyle: `
+    @page {
+      size: A4;
+      margin: 20mm;
+    }
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+      body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+  `,
+	});
+
 	return (
-		<Container maxW="container.xl">
-			<VStack spacing={8} align="stretch">
-				{/* Top Static Charts */}
-				<Grid templateColumns="repeat(2, 1fr)" gap={6}>
-					<Box bg="white" p={6} borderRadius="xl" boxShadow="lg">
-						<Heading size="md" mb={4}>
-							Top 10 Medicines Sold (Last Month)
-						</Heading>
-						<ResponsiveContainer width="100%" height={300}>
-							<BarChart data={formatMedicationData(topMedicines)}>
-								<CartesianGrid strokeDasharray="3 3" />
-								<XAxis dataKey="name" />
-								<YAxis />
-								<Tooltip />
-								<Legend />
-								<Bar dataKey="total" name="Total Sold" fill="var(--button_hover)" />
-							</BarChart>
-						</ResponsiveContainer>
-					</Box>
+		<>
+			<HStack justify="space-between" className="mb-10 mx-4">
+				<Heading color="var(--text)">Analytics Dashboard</Heading>
+				<Button
+					leftIcon={<FiPrinter />}
+					onClick={reactToPrintFn}
+					isDisabled={isLoading}
+					className="rounded-full transition-all duration-200 hover:shadow-lg"
+					backgroundColor="var(--primary)"
+					color="white"
+					_hover={{ backgroundColor: "var(--button_hover)" }}>
+					Generate Report
+				</Button>
+			</HStack>
 
-					<Box bg="white" p={6} borderRadius="xl" boxShadow="lg">
-						<Heading size="md" mb={4}>
-							Top 10 Prescribed Medicines (Last Month)
-						</Heading>
-						<ResponsiveContainer width="100%" height={300}>
-							<BarChart data={formatPrescriptionData(topPrescriptions)}>
-								<CartesianGrid strokeDasharray="3 3" />
-								<XAxis dataKey="name" />
-								<YAxis />
-								<Tooltip />
-								<Legend />
-								<Bar dataKey="total" name="Total Prescriptions" fill="var(--accent)" />
-							</BarChart>
-						</ResponsiveContainer>
-					</Box>
-
-					<Box bg="white" p={6} borderRadius="xl" boxShadow="lg" gridColumn="span 2">
-						<Heading size="md" mb={4}>
-							Highest Prescription Processing Month
-						</Heading>
-						<ResponsiveContainer width="100%" height={300}>
-							<AreaChart data={formatStaticPrescriptionProcessed(topMonthlyPrescriptions)}>
-								<CartesianGrid strokeDasharray="3 3" />
-								<XAxis dataKey="date" />
-								<YAxis />
-								<Tooltip />
-								<Legend />
-								<Area
-									type="monotone"
-									dataKey="total"
-									name="Prescriptions Processed"
-									fill="var(--primary)"
-									fillOpacity={0.3}
-									stroke="var(--accent)"
-									strokeWidth={2}
-								/>
-							</AreaChart>
-						</ResponsiveContainer>
-					</Box>
-				</Grid>
-				<Grid templateColumns="repeat(3, 1fr)" gap={6} gridColumn="span 2">
-					{["Sales", "Cost", "Profit"].map((metric) => (
-						<Box key={metric} bg="white" p={6} borderRadius="xl" boxShadow="lg" textAlign="center">
+			<Container maxW="container.xl" ref={contentRef}>
+				<VStack spacing={8} align="stretch">
+					{/* Top Static Charts */}
+					<Grid templateColumns="repeat(2, 1fr)" gap={6}>
+						<Box bg="white" p={6} borderRadius="xl" boxShadow="lg">
 							<Heading size="md" mb={4}>
-								Total {metric}
+								Top 10 Medicines Sold (Last Month)
 							</Heading>
-							<Heading size="xl" color="var(--accent)" mb={2}>
-								Rs.{" "}
-								{(metric === "Profit"
-									? staticFinancials.profit
-									: staticFinancials[`total${metric}`]
-								)?.toLocaleString() || 0}
-							</Heading>
-							<Text
-								fontSize="sm"
-								color={
-									parseFloat(calculatePercentageChange(staticFinancials, "month", metric)) >= 0
-										? "green.500"
-										: "red.500"
-								}>
-								vs Prev Month: {calculatePercentageChange(staticFinancials, "month", metric)}%
-							</Text>
-							<Text
-								fontSize="sm"
-								color={
-									parseFloat(calculatePercentageChange(staticFinancials, "year", metric)) >= 0
-										? "green.500"
-										: "red.500"
-								}>
-								vs Prev Year: {calculatePercentageChange(staticFinancials, "year", metric)}%
-							</Text>
+							<ResponsiveContainer width="100%" height={300}>
+								<BarChart data={formatMedicationData(topMedicines)}>
+									<CartesianGrid strokeDasharray="3 3" />
+									<XAxis dataKey="name" />
+									<YAxis />
+									<Tooltip />
+									<Legend />
+									<Bar dataKey="total" name="Total Sold" fill="var(--button_hover)" />
+								</BarChart>
+							</ResponsiveContainer>
 						</Box>
-					))}
-				</Grid>
 
-				{/* Divider */}
-				<Divider my={8} />
-				<HStack justify="space-between">
-					<Heading color="var(--text)">Analytics Dashboard</Heading>
-					<HStack>
-						<Select value={period} onChange={(e) => setPeriod(e.target.value)} w="150px">
-							<option value="day">Daily</option>
-							<option value="month">Monthly</option>
-							<option value="year">Yearly</option>
-							<option value="last_month">Last Month</option>
-						</Select>
-						{period === "month" && (
-							<Select value={month} onChange={(e) => setMonth(e.target.value)} w="100px">
-								{Array.from({ length: 12 }, (_, i) => (
-									<option key={i + 1} value={i + 1}>
-										{new Date(0, i).toLocaleString("default", { month: "short" })}
-									</option>
-								))}
-							</Select>
-						)}
-						{(period === "month" || period === "year") && (
-							<Select value={year} onChange={(e) => setYear(e.target.value)} w="100px">
-								{Array.from({ length: 4 }, (_, i) => {
-									const year = new Date().getFullYear() - i;
-									return (
-										<option key={year} value={year}>
-											{year}
-										</option>
-									);
-								})}
-							</Select>
-						)}
-					</HStack>
-				</HStack>
+						<Box bg="white" p={6} borderRadius="xl" boxShadow="lg">
+							<Heading size="md" mb={4}>
+								Top 10 Prescribed Medicines (Last Month)
+							</Heading>
+							<ResponsiveContainer width="100%" height={300}>
+								<BarChart data={formatPrescriptionData(topPrescriptions)}>
+									<CartesianGrid strokeDasharray="3 3" />
+									<XAxis dataKey="name" />
+									<YAxis />
+									<Tooltip />
+									<Legend />
+									<Bar dataKey="total" name="Total Prescriptions" fill="var(--accent)" />
+								</BarChart>
+							</ResponsiveContainer>
+						</Box>
 
-				<Grid templateColumns="repeat(2, 1fr)" gap={6}>
-					<Box bg="white" p={6} borderRadius="xl" boxShadow="lg">
-						<Heading size="md" mb={4}>
-							Medication Sales
-						</Heading>
-						<ResponsiveContainer width="100%" height={300}>
-							<BarChart data={formatMedicationData(medicationUsage)}>
-								<CartesianGrid strokeDasharray="3 3" />
-								<XAxis dataKey="name" />
-								<YAxis />
-								<Tooltip />
-								<Legend />
-								<Bar dataKey="total" name="Total Sold" fill="var(--primary)" />
-							</BarChart>
-						</ResponsiveContainer>
-					</Box>
-
-					<Box bg="white" p={6} borderRadius="xl" boxShadow="lg">
-						<Heading size="md" mb={4}>
-							Prescription Trends
-						</Heading>
-						<ResponsiveContainer width="100%" height={300}>
-							<BarChart data={formatPrescriptionData(prescriptionTrends)}>
-								<CartesianGrid strokeDasharray="3 3" />
-								<XAxis dataKey="name" />
-								<YAxis />
-								<Tooltip />
-								<Legend />
-								<Bar
-									dataKey="total"
-									name="Total Prescriptions"
-									stroke="var(--accent)"
-									fill="var(--primary)"
-								/>
-							</BarChart>
-						</ResponsiveContainer>
-					</Box>
-
-					<Box bg="white" p={6} borderRadius="xl" boxShadow="lg" gridColumn="span 2">
-						<Heading size="md" mb={4}>
-							Prescriptions Processed Over Time
-						</Heading>
-						<ResponsiveContainer width="100%" height={300}>
-							<AreaChart data={formatPrescriptionProcessed(prescriptionProcessed)}>
-								<CartesianGrid strokeDasharray="3 3" />
-								<XAxis dataKey="date" />
-								<YAxis />
-								<Tooltip />
-								<Legend />
-								<Area
-									type="monotone"
-									dataKey="total"
-									name="Prescriptions Processed"
-									fill="var(--primary)"
-									fillOpacity={0.3}
-									stroke="var(--accent)"
-									strokeWidth={2}
-								/>
-							</AreaChart>
-						</ResponsiveContainer>
-					</Box>
-
+						<Box bg="white" p={6} borderRadius="xl" boxShadow="lg" gridColumn="span 2">
+							<Heading size="md" mb={4}>
+								Highest Prescription Processing Month
+							</Heading>
+							<ResponsiveContainer width="100%" height={300}>
+								<AreaChart data={formatStaticPrescriptionProcessed(topMonthlyPrescriptions)}>
+									<CartesianGrid strokeDasharray="3 3" />
+									<XAxis dataKey="date" />
+									<YAxis />
+									<Tooltip />
+									<Legend />
+									<Area
+										type="monotone"
+										dataKey="total"
+										name="Prescriptions Processed"
+										fill="var(--primary)"
+										fillOpacity={0.3}
+										stroke="var(--accent)"
+										strokeWidth={2}
+									/>
+								</AreaChart>
+							</ResponsiveContainer>
+						</Box>
+					</Grid>
 					<Grid templateColumns="repeat(3, 1fr)" gap={6} gridColumn="span 2">
 						{["Sales", "Cost", "Profit"].map((metric) => (
 							<Box
@@ -418,37 +336,221 @@ const Analytics = () => {
 								<Heading size="md" mb={4}>
 									Total {metric}
 								</Heading>
-								<Heading size="xl" color="var(--accent)">
+								<Heading size="xl" color="var(--accent)" mb={2}>
 									Rs.{" "}
 									{(metric === "Profit"
-										? dynamicFinancials.profit
-										: dynamicFinancials[`total${metric}`]
+										? staticFinancials.profit
+										: staticFinancials[`total${metric}`]
 									)?.toLocaleString() || 0}
 								</Heading>
 								<Text
 									fontSize="sm"
 									color={
-										parseFloat(calculatePercentageChange(dynamicFinancials, "month", metric)) >= 0
+										parseFloat(calculatePercentageChange(staticFinancials, "month", metric)) >= 0
 											? "green.500"
 											: "red.500"
 									}>
-									vs Prev Month: {calculatePercentageChange(dynamicFinancials, "month", metric)}%
+									vs Prev Month: {calculatePercentageChange(staticFinancials, "month", metric)}%
 								</Text>
 								<Text
 									fontSize="sm"
 									color={
-										parseFloat(calculatePercentageChange(dynamicFinancials, "year", metric)) >= 0
+										parseFloat(calculatePercentageChange(staticFinancials, "year", metric)) >= 0
 											? "green.500"
 											: "red.500"
 									}>
-									vs Prev Year: {calculatePercentageChange(dynamicFinancials, "year", metric)}%
+									vs Prev Year: {calculatePercentageChange(staticFinancials, "year", metric)}%
 								</Text>
 							</Box>
 						))}
 					</Grid>
-				</Grid>
-			</VStack>
-		</Container>
+					<Box bg="white" p={6} borderRadius="xl" boxShadow="lg">
+						<Heading size="md" mb={4}>
+							Sales Distribution by Medicine
+						</Heading>
+						<ResponsiveContainer width="100%" height={300}>
+							<PieChart>
+								<Pie
+									data={medicineWiseSales}
+									dataKey="value"
+									nameKey="name"
+									cx="50%"
+									cy="50%"
+									outerRadius={100}
+									fill="var(--accent)">
+									{medicineWiseSales.map((entry, index) => (
+										<Cell key={`cell-${index}`} fill={`hsl(${(index * 36) % 360}, 70%, 50%)`} />
+									))}
+								</Pie>
+								<Tooltip formatter={(value) => `Rs. ${value.toLocaleString()}`} />
+								<Legend />
+							</PieChart>
+						</ResponsiveContainer>
+					</Box>
+
+					{/* Divider */}
+					<Divider my={8} />
+					<HStack justify="center">
+						<HStack>
+							<Select value={period} onChange={(e) => setPeriod(e.target.value)} w="150px">
+								<option value="day">Daily</option>
+								<option value="month">Monthly</option>
+								<option value="year">Yearly</option>
+								<option value="last_month">Last Month</option>
+							</Select>
+							{period === "month" && (
+								<Select value={month} onChange={(e) => setMonth(e.target.value)} w="100px">
+									{Array.from({ length: 12 }, (_, i) => (
+										<option key={i + 1} value={i + 1}>
+											{new Date(0, i).toLocaleString("default", { month: "short" })}
+										</option>
+									))}
+								</Select>
+							)}
+							{(period === "month" || period === "year") && (
+								<Select value={year} onChange={(e) => setYear(e.target.value)} w="100px">
+									{Array.from({ length: 4 }, (_, i) => {
+										const year = new Date().getFullYear() - i;
+										return (
+											<option key={year} value={year}>
+												{year}
+											</option>
+										);
+									})}
+								</Select>
+							)}
+						</HStack>
+					</HStack>
+
+					<Grid templateColumns="repeat(2, 1fr)" gap={6}>
+						<Box bg="white" p={6} borderRadius="xl" boxShadow="lg">
+							<Heading size="md" mb={4}>
+								Medication Sales
+							</Heading>
+							<ResponsiveContainer width="100%" height={300}>
+								<BarChart data={formatMedicationData(medicationUsage)}>
+									<CartesianGrid strokeDasharray="3 3" />
+									<XAxis dataKey="name" />
+									<YAxis />
+									<Tooltip />
+									<Legend />
+									<Bar dataKey="total" name="Total Sold" fill="var(--primary)" />
+								</BarChart>
+							</ResponsiveContainer>
+						</Box>
+
+						<Box bg="white" p={6} borderRadius="xl" boxShadow="lg">
+							<Heading size="md" mb={4}>
+								Prescription Trends
+							</Heading>
+							<ResponsiveContainer width="100%" height={300}>
+								<BarChart data={formatPrescriptionData(prescriptionTrends)}>
+									<CartesianGrid strokeDasharray="3 3" />
+									<XAxis dataKey="name" />
+									<YAxis />
+									<Tooltip />
+									<Legend />
+									<Bar
+										dataKey="total"
+										name="Total Prescriptions"
+										stroke="var(--accent)"
+										fill="var(--primary)"
+									/>
+								</BarChart>
+							</ResponsiveContainer>
+						</Box>
+
+						<Box bg="white" p={6} borderRadius="xl" boxShadow="lg" gridColumn="span 2">
+							<Heading size="md" mb={4}>
+								Prescriptions Processed Over Time
+							</Heading>
+							<ResponsiveContainer width="100%" height={300}>
+								<AreaChart data={formatPrescriptionProcessed(prescriptionProcessed)}>
+									<CartesianGrid strokeDasharray="3 3" />
+									<XAxis dataKey="date" />
+									<YAxis />
+									<Tooltip />
+									<Legend />
+									<Area
+										type="monotone"
+										dataKey="total"
+										name="Prescriptions Processed"
+										fill="var(--primary)"
+										fillOpacity={0.3}
+										stroke="var(--accent)"
+										strokeWidth={2}
+									/>
+								</AreaChart>
+							</ResponsiveContainer>
+						</Box>
+
+						<Grid templateColumns="repeat(3, 1fr)" gap={6} gridColumn="span 2">
+							{["Sales", "Cost", "Profit"].map((metric) => (
+								<Box
+									key={metric}
+									bg="white"
+									p={6}
+									borderRadius="xl"
+									boxShadow="lg"
+									textAlign="center">
+									<Heading size="md" mb={4}>
+										Total {metric}
+									</Heading>
+									<Heading size="xl" color="var(--accent)">
+										Rs.{" "}
+										{(metric === "Profit"
+											? dynamicFinancials.profit
+											: dynamicFinancials[`total${metric}`]
+										)?.toLocaleString() || 0}
+									</Heading>
+									<Text
+										fontSize="sm"
+										color={
+											parseFloat(calculatePercentageChange(dynamicFinancials, "month", metric)) >= 0
+												? "green.500"
+												: "red.500"
+										}>
+										vs Prev Month: {calculatePercentageChange(dynamicFinancials, "month", metric)}%
+									</Text>
+									<Text
+										fontSize="sm"
+										color={
+											parseFloat(calculatePercentageChange(dynamicFinancials, "year", metric)) >= 0
+												? "green.500"
+												: "red.500"
+										}>
+										vs Prev Year: {calculatePercentageChange(dynamicFinancials, "year", metric)}%
+									</Text>
+								</Box>
+							))}
+						</Grid>
+					</Grid>
+					<Box bg="white" p={6} borderRadius="xl" boxShadow="lg">
+						<Heading size="md" mb={4}>
+							Sales Distribution by Medicine
+						</Heading>
+						<ResponsiveContainer width="100%" height={300}>
+							<PieChart>
+								<Pie
+									data={dynamicMedicineWiseSales}
+									dataKey="value"
+									nameKey="name"
+									cx="50%"
+									cy="50%"
+									outerRadius={100}
+									fill="var(--accent)">
+									{dynamicMedicineWiseSales.map((entry, index) => (
+										<Cell key={`cell-${index}`} fill={`hsl(${(index * 36) % 360}, 70%, 50%)`} />
+									))}
+								</Pie>
+								<Tooltip formatter={(value) => `Rs. ${value.toLocaleString()}`} />
+								<Legend />
+							</PieChart>
+						</ResponsiveContainer>
+					</Box>
+				</VStack>
+			</Container>
+		</>
 	);
 };
 

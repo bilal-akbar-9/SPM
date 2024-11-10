@@ -8,8 +8,8 @@
   --background: #f7feff;
   --chakra-primary: #319795;
   --primary: #14d0fc;
-  --secondary: ##72a5fd;
-  --accent: ##3b55fc;
+  --secondary: #72a5fd;
+  --accent: #3b55fc;
   --button_hover: #20b6d8;
 }
 /* The font  */
@@ -30,7 +30,7 @@ h1, h2, h3, h4, h5, h6, body {
 }
 
 button{
-  border-radius: 0px !important;
+  /* border-radius: 0px !important; */
 }
 
 @media screen and (max-width: 768px) {

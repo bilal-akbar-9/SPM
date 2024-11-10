@@ -391,6 +391,38 @@ const analyticsController = {
 								},
 							},
 						],
+						medicineWiseSales: [
+							{ $match: currentMatch },
+							{ $unwind: "$medicationUsageReport" },
+							{
+								$lookup: {
+									from: "medicines",
+									localField: "medicationUsageReport.medicationId",
+									foreignField: "medicationId",
+									as: "medicineDetails",
+								},
+							},
+							{ $unwind: "$medicineDetails" },
+							{
+								$group: {
+									_id: "$medicineDetails.name",
+									totalSales: {
+										$sum: {
+											$multiply: ["$medicationUsageReport.totalSold", "$medicineDetails.price"],
+										},
+									},
+								},
+							},
+							{
+								$project: {
+									name: "$_id",
+									value: "$totalSales",
+									_id: 0,
+								},
+							},
+							{ $sort: { value: -1 } },
+							{ $limit: 10 }, // Top 10 medicines
+						],
 					},
 				},
 			]);
@@ -399,6 +431,7 @@ const analyticsController = {
 				current: analytics[0].current,
 				previousMonth: analytics[0].previousMonth[0] || { totalSales: 0, totalCost: 0, profit: 0 },
 				previousYear: analytics[0].previousYear[0] || { totalSales: 0, totalCost: 0, profit: 0 },
+				medicineWiseSales: analytics[0].medicineWiseSales || [],
 			};
 
 			res.status(200).json(result);
