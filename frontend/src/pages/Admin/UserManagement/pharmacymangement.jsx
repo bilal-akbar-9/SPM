@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Box, Text, Button, VStack, HStack, Spinner, useToast, IconButton } from '@chakra-ui/react';
-import { FaTrash } from 'react-icons/fa';
+import { Box, Text, Button, VStack, HStack, Spinner, useToast, IconButton, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, Input } from '@chakra-ui/react';
+import { FaTrash, FaEdit } from 'react-icons/fa';
 import Cookies from 'js-cookie';
 
 const PharmacyManagement = () => {
     const [pharmacies, setPharmacies] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [selectedPharmacy, setSelectedPharmacy] = useState(null);
+    const [updatedPharmacy, setUpdatedPharmacy] = useState({});
     const toast = useToast();
 
-    // Fetch pharmacies on component mount
     useEffect(() => {
         const fetchPharmacies = async () => {
             try {
@@ -32,7 +34,6 @@ const PharmacyManagement = () => {
         fetchPharmacies();
     }, [toast]);
 
-    // Delete pharmacy and refetch pharmacies
     const deletePharmacy = async (id) => {
         try {
             await axios.delete(`/pharmacy-api/pharmacies/${id}`, {
@@ -52,10 +53,62 @@ const PharmacyManagement = () => {
                 status: "success",
                 duration: 3000,
             });
-
         } catch (error) {
             toast({
                 title: "Error deleting pharmacy",
+                description: error.response?.data?.message || "Something went wrong",
+                status: "error",
+                duration: 3000,
+            });
+        }
+    };
+
+    const openEditModal = (pharmacy) => {
+        setSelectedPharmacy(pharmacy);
+        setUpdatedPharmacy({
+            name: pharmacy.name,
+            location: pharmacy.location,
+            contactInfo: pharmacy.contactInfo,
+        });
+        setIsEditModalOpen(true);
+    };
+
+    const closeEditModal = () => {
+        setIsEditModalOpen(false);
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setUpdatedPharmacy((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const updatePharmacy = async () => {
+        try {
+            await axios.put(
+                `/pharmacy-api/pharmacies/${selectedPharmacy.pharmacyId}`,
+                updatedPharmacy,
+                {
+                    headers: { Authorization: `Bearer ${Cookies.get("token")}` },
+                }
+            );
+
+            // Refetch pharmacies after updating
+            const response = await axios.get("/pharmacy-api/pharmacies/", {
+                headers: { Authorization: `Bearer ${Cookies.get("token")}` },
+            });
+
+            setPharmacies(response.data);
+            setIsEditModalOpen(false);
+
+            toast({
+                title: "Pharmacy updated",
+                description: "The pharmacy has been successfully updated.",
+                status: "success",
+                duration: 3000,
+            });
+        } catch (error) {
+            toast({
+                title: "Error updating pharmacy",
                 description: error.response?.data?.message || "Something went wrong",
                 status: "error",
                 duration: 3000,
@@ -86,7 +139,12 @@ const PharmacyManagement = () => {
                                     {pharmacy.name}
                                 </Text>
                                 <HStack>
-                                
+                                    <IconButton
+                                        icon={<FaEdit />}
+                                        colorScheme="teal"
+                                        onClick={() => openEditModal(pharmacy)}
+                                        aria-label="Edit pharmacy"
+                                    />
                                     <IconButton
                                         icon={<FaTrash />}
                                         colorScheme="red"
@@ -103,6 +161,46 @@ const PharmacyManagement = () => {
                     <Text color="#00191e">No pharmacies found</Text>
                 )}
             </VStack>
+
+            {/* Edit Pharmacy Modal */}
+            <Modal isOpen={isEditModalOpen} onClose={closeEditModal}>
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>Edit Pharmacy</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody>
+                        <Input
+                            placeholder="Pharmacy Name"
+                            value={updatedPharmacy.name}
+                            name="name"
+                            onChange={handleInputChange}
+                            mb={3}
+                        />
+                        <Input
+                            placeholder="Location"
+                            value={updatedPharmacy.location}
+                            name="location"
+                            onChange={handleInputChange}
+                            mb={3}
+                        />
+                        <Input
+                            placeholder="Contact Info"
+                            value={updatedPharmacy.contactInfo}
+                            name="contactInfo"
+                            onChange={handleInputChange}
+                        />
+                    </ModalBody>
+
+                    <ModalFooter>
+                        <Button colorScheme="blue" mr={3} onClick={updatePharmacy}>
+                            Save Changes
+                        </Button>
+                        <Button variant="ghost" onClick={closeEditModal}>
+                            Cancel
+                        </Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
         </Box>
     );
 };
