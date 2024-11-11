@@ -11,6 +11,8 @@ const pharmacyRoutes = require("./routes/PharmacyRoutes");
 const analyticsRoutes = require("./routes/AnalyticsRoutes");
 const prescriptionRoutes = require("./routes/PrescriptionRoutes");
 const userRoutes = require("./routes/UserRoutes");
+const medicineRoutes = require("./routes/MedicineRoutes");
+
 
 
 //Express app intialization
@@ -43,6 +45,7 @@ app.use("/pharmacy-api/pharmacies", pharmacyRoutes);
 app.use("/pharmacy-api/analytics", analyticsRoutes);
 app.use("/pharmacy-api/prescriptions", prescriptionRoutes);
 app.use("/pharmacy-api/users", userRoutes);
+app.use("/pharmacy-api/medicine", medicineRoutes);
 
 //Listen to port
 const PORT = process.env.PORT || 3000;
