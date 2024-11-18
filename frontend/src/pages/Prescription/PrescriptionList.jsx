@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Select, Text, VStack } from '@chakra-ui/react';
+import { Box, Button, Text, VStack } from '@chakra-ui/react';
 import axios from 'axios';
 
 const PrescriptionList = ({ userId, onSelectPrescription }) => {
@@ -7,8 +7,12 @@ const PrescriptionList = ({ userId, onSelectPrescription }) => {
 
     useEffect(() => {
         const fetchPrescriptions = async () => {
-            const response = await axios.get(`/api/prescriptions/patient/${userId}/valid-prescriptions`);
-            setPrescriptions(response.data);
+            try {
+                const response = await axios.get(`/pharmacy-api/prescriptions/patient/${userId}/valid-prescriptions`);
+                setPrescriptions(response.data);
+            } catch (error) {
+                console.error("Error fetching prescriptions", error);
+            }
         };
         fetchPrescriptions();
     }, [userId]);
