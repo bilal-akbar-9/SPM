@@ -1,6 +1,6 @@
 import { Box, VStack, Text, Link, Icon, Flex } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
-import { FaCog, FaSignOutAlt } from "react-icons/fa";
+import { FaSignOutAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import {
 	FaHome,
@@ -10,6 +10,7 @@ import {
 	FaFileInvoiceDollar,
 	FaUserCog,
 	FaStore,
+	FaTruck,
 } from "react-icons/fa";
 import useUserStore from "../hooks/useUserStore";
 import Cookies from "js-cookie";
@@ -39,6 +40,12 @@ const Navbar = () => {
 		//Add for User Management and Pharmacy Management
 		{ icon: FaUserCog, text: "User Management", path: "/dashboard/users", show: isAdmin },
 		{ icon: FaStore, text: "Pharmacy Management", path: "/dashboard/pharmacies", show: isAdmin },
+		{ 
+			icon: FaTruck, 
+			text: "Supplier Management", 
+			path: "/dashboard/suppliers", 
+			show: isAdmin 
+		}
 	];
 
 	return (

@@ -14,10 +14,11 @@ import PharmacyDashboardHome from "./pages/PharmacyDashboardHome";
 //Layouts
 import HomeLayout from "./pages/HomeLayout";
 import PrescriptionManagement from "./pages/Prescription/PrescriptionManagement";
-import PharmacyManagement from "./pages/Admin/UserManagement/pharmacymangement";
+import PharmacyManagement from "./pages/Admin/pharmacymangement";
 // Protected Route
 import ProtectedRoute from "./components/ProtectedRoute";
 import UserManagement from "./pages/Admin/UserManagement/UserManagement";
+import SupplierManagement from "./pages/Admin/SupplierManagement";
 
 
 
@@ -81,6 +82,14 @@ const routes = createBrowserRouter([
 							</ProtectedRoute>
 						),
 					},
+					{
+						path: "suppliers",
+						element: (
+							<ProtectedRoute requiredRole="admin">
+								<SupplierManagement />
+							</ProtectedRoute>
+						),
+					}
 				],
 			},
 		],

@@ -4,6 +4,7 @@ const generatePharmacyData = require('./PharmacyDataGen');
 const generateUserData = require('./UserDataGen');
 const generatePrescriptionData = require('./PrescriptionDataGen');
 const generateAnalyticsData = require('./AnalyticsDataGen');
+const supplierDataGen = require('./SupplierDataGen');
 const mongoose = require('mongoose');
 require('dotenv').config();
 
@@ -18,6 +19,7 @@ const seedData = async () => {
         await generateUserData();
         await generatePrescriptionData();
         await generateAnalyticsData();
+        await supplierDataGen();
 
         console.log('Data seeding completed!');
         process.exit(0);
