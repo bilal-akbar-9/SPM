@@ -1,3 +1,4 @@
+const { string } = require("joi");
 const mongoose = require("mongoose");
 
 const PrescriptionSchema = new mongoose.Schema({
@@ -9,7 +10,7 @@ const PrescriptionSchema = new mongoose.Schema({
     medications: [
         {
             medicationId: {
-                type: mongoose.Schema.Types.ObjectId,
+                type: String,
                 ref: 'Medicine',
                 required: true,
             },
@@ -20,7 +21,7 @@ const PrescriptionSchema = new mongoose.Schema({
     ],
     status: {
         type: String,
-        enum: ["Pending", "Fulfilled", "Inprogress"],
+        enum: ["Pending", "Fulfilled", "Cancelled"],
         required: true,
     },
     createdAt: {

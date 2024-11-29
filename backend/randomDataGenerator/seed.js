@@ -5,6 +5,7 @@ const generateUserData = require('./UserDataGen');
 const generatePrescriptionData = require('./PrescriptionDataGen');
 const generateAnalyticsData = require('./AnalyticsDataGen');
 const supplierDataGen = require('./SupplierDataGen');
+const inventoryDataGen=require('./InventoryDataGen');
 const mongoose = require('mongoose');
 require('dotenv').config();
 
@@ -14,12 +15,13 @@ const seedData = async () => {
         console.log('Connected to MongoDB...');
 
         // Generate data in sequence
-        await generatePharmacyData();
-        await generateMedicineData();
-        await generateUserData();
-        await generatePrescriptionData();
-        await generateAnalyticsData();
-        await supplierDataGen();
+        // await generatePharmacyData();
+        // await generateMedicineData();
+        // await generateUserData();
+        // await generatePrescriptionData();
+        // await generateAnalyticsData();
+        // await supplierDataGen();
+        await inventoryDataGen();
 
         console.log('Data seeding completed!');
         process.exit(0);
