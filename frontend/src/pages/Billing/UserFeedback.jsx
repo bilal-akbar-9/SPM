@@ -16,15 +16,14 @@ import ReactStars from "react-rating-stars-component";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import useUserStore from "../../hooks/useUserStore";
-import usePrescriptionStore from "../../hooks/usePrescriptionStore"
+import usePrescriptionStore from "../../hooks/usePrescriptionStore";
 import { useNavigate } from "react-router-dom";
-
 import Cookies from "js-cookie";
 
 // UserFeedback.jsx - Update component
 const UserFeedback = ({ onSubmitSuccess }) => {
   const { user } = useUserStore();
-  const { prescriptionUser, selectedPrescription } = usePrescriptionStore();
+  const { prescriptionUser, selectedPrescription, setSelectedPrescriptionStatus } = usePrescriptionStore();
   const [rating, setRating] = useState(0);
   const [manualUserId, setManualUserId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -84,10 +83,8 @@ const UserFeedback = ({ onSubmitSuccess }) => {
       });
 
       
-      // Navigate after successful submission with delay
-      setTimeout(() => {
-        navigate("/dashboard/prescriptions");
-      }, 3000);
+      setSelectedPrescriptionStatus("Fulfilled");
+      navigate("/dashboard/prescriptions");
 
       reset();
       setRating(0);

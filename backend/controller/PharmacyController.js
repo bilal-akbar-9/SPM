@@ -87,12 +87,12 @@ const pharmacyController = {
                 return res.status(404).json({ message: 'Pharmacy not found' });
             }
     
-            const { rating, review, pharmacist, prescriptionId  } = req.body;
+            const { rating, review, pharmacist, prescriptionId, userId  } = req.body;
             
             pharmacy.customerFeedback.push({
                 rating,
                 review,
-                userId: req.decoded.userId, // Get from auth token
+                userId: userId, // Get from auth token
                 pharmacist,
                 prescriptionId
             });

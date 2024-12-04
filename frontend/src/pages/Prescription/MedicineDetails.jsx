@@ -32,16 +32,15 @@ import ReactStars from "react-rating-stars-component";
 
 
 
-const MedicineDetails = ({ prescriptionId, onBack, selectedPrescriptionStatus }) => {
+const MedicineDetails = ({ prescriptionId, onBack }) => {
 
-  console.log(selectedPrescriptionStatus);
   const [feedback, setFeedback] = useState(null);
   const toast = useToast();
   const [medicineDetails, setMedicineDetails] = useState([]);
   const [quantityErrors, setQuantityErrors] = useState({});
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { user } = useUserStore();
-  const { prescriptionUser, selectedPrescription } = usePrescriptionStore()
+  const { prescriptionUser, selectedPrescription, selectedPrescriptionStatus } = usePrescriptionStore()
   const [billingLoading, setBillingLoading] = useState(false);
   
   // PDF Modal
@@ -177,19 +176,39 @@ const MedicineDetails = ({ prescriptionId, onBack, selectedPrescriptionStatus })
         }
       );
   
-      // Update prescription status after successful billing
       if (response.data.success) {
+        // Update prescription status
         await axios.patch(
           `/pharmacy-api/prescriptions/${selectedPrescription}/status`,
           {
             status: "Fulfilled",
-            billId: response.data.data._id // Add bill ID to prescription
+            billId: response.data.data._id
           },
           {
             headers: { 
               Authorization: `Bearer ${Cookies.get("token")}` 
             }
           }
+        );
+  
+        // Update inventory quantities
+        await Promise.all(
+          medicineDetails
+            .filter(medicine => medicine.availableQuantity > 0 && medicine.currentQuantity > 0)
+            .map(medicine => 
+              axios.put(
+                `/pharmacy-api/inventoryservices/${user.pharmacyId.pharmacyId}/update`,
+                {
+                  medicationId: medicine.medicationId,
+                  quantity: medicine.availableQuantity - medicine.currentQuantity
+                },
+                {
+                  headers: { 
+                    Authorization: `Bearer ${Cookies.get("token")}` 
+                  }
+                }
+              )
+            )
         );
   
         // Handle PDF display
@@ -203,19 +222,19 @@ const MedicineDetails = ({ prescriptionId, onBack, selectedPrescriptionStatus })
         const pdfBlob = new Blob([byteArray], { type: 'application/pdf' });
         const pdfUrl = URL.createObjectURL(pdfBlob);
         setPdfData(pdfUrl);
-        onClose(); // Close confirmation modal
-        onPdfOpen(); // Open PDF modal
+        onClose();
+        onPdfOpen();
   
         toast({
           title: "Billing Successful",
-          description: "Your bill has been generated",
+          description: "Your bill has been generated and inventory updated",
           status: "success",
           duration: 5000,
         });
       }
     } catch (error) {
       toast({
-        title: "Error generating bill",
+        title: "Error processing billing",
         description: error.response?.data?.message || "Something went wrong",
         status: "error",
         duration: 5000,
