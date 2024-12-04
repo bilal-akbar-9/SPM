@@ -78,6 +78,50 @@ const pharmacyController = {
         } catch (error) {
             res.status(500).json({ message: 'Error deleting pharmacy', error: error.message });
         }
+    },
+        // PharmacyController.js - Add new controller functions
+    addFeedback : async (req, res) => {
+        try {
+            const pharmacy = await PharmacySchema.findOne({ pharmacyId: req.params.id });
+            if (!pharmacy) {
+                return res.status(404).json({ message: 'Pharmacy not found' });
+            }
+    
+            const { rating, review, pharmacist } = req.body;
+            
+            pharmacy.customerFeedback.push({
+                rating,
+                review,
+                userId: req.decoded.userId, // Get from auth token
+                pharmacist
+            });
+    
+            await pharmacy.save();
+            res.status(201).json({
+                message: 'Feedback added successfully',
+                feedback: pharmacy.customerFeedback[pharmacy.customerFeedback.length - 1]
+            });
+        } catch (error) {
+            res.status(500).json({ 
+                message: 'Error adding feedback', 
+                error: error.message 
+            });
+        }
+    },
+    getFeedback : async (req, res) => {
+        try {
+            const pharmacy = await PharmacySchema.findOne({ pharmacyId: req.params.id });
+            if (!pharmacy) {
+                return res.status(404).json({ message: 'Pharmacy not found' });
+            }
+    
+            res.status(200).json(pharmacy.customerFeedback);
+        } catch (error) {
+            res.status(500).json({ 
+                message: 'Error fetching feedback', 
+                error: error.message 
+            });
+        }
     }
 };
 

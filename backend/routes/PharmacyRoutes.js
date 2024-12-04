@@ -33,4 +33,17 @@ router.put("/:id", VerifyToken, VerifyAdmin, pharmacyController.updatePharmacy);
  */
 router.delete("/:id", VerifyToken, VerifyAdmin, pharmacyController.deletePharmacy);
 
+// PharmacyRoutes.js - Add new routes
+/**
+ * @route POST /api/pharmacies/:id/feedback
+ * @desc Add customer feedback for pharmacy
+ */
+router.post("/:id/feedback", VerifyToken, pharmacyController.addFeedback);
+
+/**
+ * @route GET /api/pharmacies/:id/feedback
+ * @desc Get all feedback for pharmacy
+ */
+router.get("/:id/feedback", VerifyToken, pharmacyController.getFeedback);
+
 module.exports = router;

@@ -20,6 +20,28 @@ const PharmacySchema = new mongoose.Schema({
 		type: String,
 		required: true,
 	},
+	customerFeedback: [
+		{
+			rating: {
+			type: Number,
+				required: true,
+				min: 1,
+				max: 5,
+			},
+			review: {
+				type: String,
+				required: true,
+			},
+			userId: {
+				type: String,
+				required: true,
+			},
+			pharmacist: {
+				type: String,
+				required: true,
+			},
+		}
+	]
 });
 
 const model = mongoose.model("Pharmacy", PharmacySchema);
