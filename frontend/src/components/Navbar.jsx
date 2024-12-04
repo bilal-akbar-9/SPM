@@ -8,7 +8,6 @@ import {
 	FaPrescriptionBottle,
 	FaChartBar,
 	FaBoxes,
-	FaFileInvoiceDollar,
 	FaUserCog,
 	FaStore,
 	FaTruck,
@@ -36,7 +35,6 @@ const Navbar = () => {
 			path: "/dashboard/prescriptions",
 			show: true,
 		},
-		{ icon: FaFileInvoiceDollar, text: "Billing", path: "/dashboard/billing", show: true },
 		{ icon: FaChartBar, text: "Analytics", path: "/dashboard/analytics", show: true },
 		//Add for User Management and Pharmacy Management
 		{ icon: FaUserCog, text: "User Management", path: "/dashboard/users", show: isAdmin },

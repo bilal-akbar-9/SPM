@@ -10,7 +10,7 @@ import Inventory from "./pages/Inventory/Inventory";
 import Notifications from "./pages/Inventory/Notification";
 import Billing from "./pages/Billing/Billings";
 import Analytics from "./pages/Analytics/Analytics";
-import PharmacyDashboardHome from "./pages/PharmacyDashboardHome";
+import Home from "./pages/Home";
 
 //Layouts
 import HomeLayout from "./pages/HomeLayout";
@@ -67,7 +67,7 @@ const routes = createBrowserRouter([
 					},
 					{
 						path: "home",
-						element: <PharmacyDashboardHome />,
+						element: <Home />,
 					},
 					{
 						path: "users",
