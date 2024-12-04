@@ -7,6 +7,7 @@ import Register from "./pages/Register/Register";
 // import Layout from "./components/Layout";
 // import Home from "./pages/Home/Home";
 import Inventory from "./pages/Inventory/Inventory";
+import Notifications from "./pages/Inventory/Notification";
 import Billing from "./pages/Billing/Billings";
 import Analytics from "./pages/Analytics/Analytics";
 import PharmacyDashboardHome from "./pages/PharmacyDashboardHome";
@@ -89,6 +90,14 @@ const routes = createBrowserRouter([
 								<SupplierManagement />
 							</ProtectedRoute>
 						),
+					},
+					{
+						path:"notifications",
+						element:(
+							<ProtectedRoute requiredRole="admin">
+								<Notifications />
+							</ProtectedRoute>
+						)
 					}
 				],
 			},

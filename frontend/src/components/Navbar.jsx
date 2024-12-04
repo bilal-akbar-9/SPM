@@ -1,6 +1,7 @@
 import { Box, VStack, Text, Link, Icon, Flex } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
 import { FaSignOutAlt } from "react-icons/fa";
+import { FaBell } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import {
 	FaHome,
@@ -45,6 +46,12 @@ const Navbar = () => {
 			text: "Supplier Management", 
 			path: "/dashboard/suppliers", 
 			show: isAdmin 
+		},
+		{ 
+			icon: FaBell,  
+			text: "Notifications", 
+			path: "/dashboard/notifications", 
+			show: isAdmin  
 		}
 	];
 
