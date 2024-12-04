@@ -40,6 +40,10 @@ const PharmacySchema = new mongoose.Schema({
 				type: String,
 				required: true,
 			},
+			prescriptionId: {
+				type: String,
+				required: true,
+			},
 		}
 	]
 });

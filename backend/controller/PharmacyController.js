@@ -87,14 +87,17 @@ const pharmacyController = {
                 return res.status(404).json({ message: 'Pharmacy not found' });
             }
     
-            const { rating, review, pharmacist } = req.body;
+            const { rating, review, pharmacist, prescriptionId  } = req.body;
             
             pharmacy.customerFeedback.push({
                 rating,
                 review,
                 userId: req.decoded.userId, // Get from auth token
-                pharmacist
+                pharmacist,
+                prescriptionId
             });
+
+            console.log(pharmacy.customerFeedback);
     
             await pharmacy.save();
             res.status(201).json({
@@ -116,6 +119,26 @@ const pharmacyController = {
             }
     
             res.status(200).json(pharmacy.customerFeedback);
+        } catch (error) {
+            res.status(500).json({ 
+                message: 'Error fetching feedback', 
+                error: error.message 
+            });
+        }
+    },
+    getFeedbackByPrescriptionId: async (req, res) => {
+        try {
+            const pharmacy = await PharmacySchema.findOne({ pharmacyId: req.params.id });
+            if (!pharmacy) {
+                return res.status(404).json({ message: 'Pharmacy not found' });
+            }
+    
+            const feedback = pharmacy.customerFeedback.find(feedback => feedback.prescriptionId === req.params.prescriptionId);
+            if (!feedback) {
+                return res.status(404).json({ message: 'Feedback not found' });
+            }
+    
+            res.status(200).json(feedback);
         } catch (error) {
             res.status(500).json({ 
                 message: 'Error fetching feedback', 

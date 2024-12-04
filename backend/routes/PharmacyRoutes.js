@@ -46,4 +46,10 @@ router.post("/:id/feedback", VerifyToken, pharmacyController.addFeedback);
  */
 router.get("/:id/feedback", VerifyToken, pharmacyController.getFeedback);
 
+/**
+ * @route GET /api/pharmacies/:id/feedback/:prescriptionId
+ * @desc Get feedback for prescription
+ */
+router.get("/:id/feedback/:prescriptionId", VerifyToken, pharmacyController.getFeedbackByPrescriptionId);
+
 module.exports = router;

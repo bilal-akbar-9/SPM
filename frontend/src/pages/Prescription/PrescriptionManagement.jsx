@@ -7,7 +7,7 @@ import usePrescriptionStore from '../../hooks/usePrescriptionStore';
 
 const PrescriptionManagement = () => {
     const [userId, setUserId] = useState('');
-    const { selectedPrescription, setSelectedPrescription, setPrescriptionUser, prescriptionUser } = usePrescriptionStore();
+    const { selectedPrescription, setSelectedPrescription, setPrescriptionUser, prescriptionUser, selectedPrescriptionStatus, setSelectedPrescriptionStatus } = usePrescriptionStore();
     
     const handleSearch = () => {
         setPrescriptionUser(userId); // Update global state only on search
@@ -19,6 +19,7 @@ const PrescriptionManagement = () => {
                 <MedicineDetails
                     prescriptionId={selectedPrescription}
                     onBack={() => setSelectedPrescription(null)}
+                    selectedPrescriptionStatus={selectedPrescriptionStatus}
                 />
             ) : (
                 <VStack spacing={4} align="stretch">
@@ -36,6 +37,7 @@ const PrescriptionManagement = () => {
                         <PrescriptionList
                             userId={prescriptionUser}
                             onSelectPrescription={setSelectedPrescription}
+                            onSelectedPrescriptionStatus={setSelectedPrescriptionStatus}
                         />
                     )}
                 </VStack>

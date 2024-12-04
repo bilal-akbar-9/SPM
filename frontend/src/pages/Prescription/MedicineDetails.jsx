@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Text,
@@ -18,7 +18,9 @@ import {
   ModalFooter,
   useDisclosure,
   useToast,
-  ModalCloseButton
+  ModalCloseButton,
+  Divider,
+  Heading
 } from "@chakra-ui/react";
 import axios from "axios";
 import useUserStore from "../../hooks/useUserStore";
@@ -26,9 +28,14 @@ import usePrescriptionStore from "../../hooks/usePrescriptionStore";
 import Cookies from "js-cookie";
 import { FiDownload } from 'react-icons/fi';
 import { useNavigate } from "react-router-dom";
+import ReactStars from "react-rating-stars-component";
 
 
-const MedicineDetails = ({ prescriptionId, onBack }) => {
+
+const MedicineDetails = ({ prescriptionId, onBack, selectedPrescriptionStatus }) => {
+
+  console.log(selectedPrescriptionStatus);
+  const [feedback, setFeedback] = useState(null);
   const toast = useToast();
   const [medicineDetails, setMedicineDetails] = useState([]);
   const [quantityErrors, setQuantityErrors] = useState({});
@@ -52,6 +59,26 @@ const MedicineDetails = ({ prescriptionId, onBack }) => {
       }
     };
   }, [pdfData]);
+
+    // Add useEffect to fetch feedback when prescription is fulfilled
+  useEffect(() => {
+    const fetchFeedback = async () => {
+      if (selectedPrescriptionStatus === "Fulfilled") {
+        try {
+          const response = await axios.get(
+            `/pharmacy-api/pharmacies/${user.pharmacyId.pharmacyId}/feedback/${prescriptionId}`,
+            {
+              headers: { Authorization: `Bearer ${Cookies.get("token")}` }
+            }
+          );
+          setFeedback(response.data);
+        } catch (error) {
+          console.error("Error fetching feedback:", error);
+        }
+      }
+    };
+    fetchFeedback();
+  }, [selectedPrescriptionStatus, prescriptionId]);
 
   useEffect(() => {
     const fetchMedicineDetails = async () => {
@@ -388,6 +415,126 @@ const MedicineDetails = ({ prescriptionId, onBack }) => {
           </ModalFooter>
         </ModalContent>
       </Modal>
+      {selectedPrescriptionStatus === "Fulfilled" && (
+      <>
+        <Divider my={8} borderColor="var(--accent)" borderWidth={2} opacity={0.3} />
+        
+        <Box 
+          bg="white" 
+          p={8} 
+          borderRadius="xl" 
+          boxShadow="lg"
+          transition="all 0.2s"
+          _hover={{ transform: "translateY(-2px)", boxShadow: "xl" }}
+        >
+          <VStack align="stretch" spacing={6}>
+            <Heading 
+              size="md" 
+              color="var(--text)"
+              borderBottom="2px solid"
+              borderColor="var(--primary)"
+              pb={2}
+            >
+              Customer Feedback
+            </Heading>
+            
+            {feedback ? (
+              <VStack align="stretch" spacing={6}>
+                <Box 
+                  bg="gray.50" 
+                  p={4} 
+                  borderRadius="lg"
+                  border="1px"
+                  borderColor="gray.100"
+                >
+                  <VStack align="stretch" spacing={3}>
+                    <Flex align="center" gap={4}>
+                      <Text fontWeight="bold" color="var(--text)">Rating:</Text>
+                      <Box>
+                        <ReactStars
+                          value={feedback.rating}
+                          edit={false}
+                          size={24}
+                          activeColor="var(--primary)"
+                          color="gray.200"
+                          isHalf={false}
+                        />
+                      </Box>
+                      <Text color="var(--accent)" fontWeight="bold">
+                        {feedback.rating}/5
+                      </Text>
+                    </Flex>
+                    
+                    <Box>
+                      <Text 
+                        fontWeight="bold" 
+                        mb={2} 
+                        color="var(--text)"
+                      >
+                        Review:
+                      </Text>
+                      <Text 
+                        color="gray.700"
+                        p={3}
+                        bg="white"
+                        borderRadius="md"
+                        borderWidth="1px"
+                        borderColor="gray.200"
+                      >
+                        {feedback.review}
+                      </Text>
+                    </Box>
+                    
+                    <Flex 
+                      align="center" 
+                      gap={2}
+                      p={3}
+                      bg="var(--background)"
+                      borderRadius="md"
+                    >
+                      <Text fontWeight="bold" color="var(--text)">
+                        Pharmacist:
+                      </Text>
+                      <Text color="var(--accent)">
+                        {feedback.pharmacist}
+                      </Text>
+                      </Flex>
+                      <Flex 
+                      align="center" 
+                      gap={2}
+                      p={3}
+                      bg="var(--background)"
+                      borderRadius="md"
+                    >
+                      <Text fontWeight="bold" color="var(--text)">
+                        Customer ID:
+                      </Text>
+                      <Text color="var(--accent)">
+                        {feedback.userId}
+                      </Text>
+                    </Flex>
+                  </VStack>
+                </Box>
+              </VStack>
+            ) : (
+              <Box 
+                p={6} 
+                textAlign="center" 
+                bg="gray.50" 
+                borderRadius="lg"
+              >
+                <Text 
+                  color="gray.500"
+                  fontSize="lg"
+                >
+                  No feedback available
+                </Text>
+              </Box>
+            )}
+          </VStack>
+        </Box>
+      </>
+    )}
     </VStack>
   );
 };

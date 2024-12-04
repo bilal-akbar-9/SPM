@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Button, Text, VStack, Flex } from '@chakra-ui/react';
+import  { useState, useEffect } from 'react';
+import { Text, VStack, Flex } from '@chakra-ui/react';
 import axios from 'axios';
 
-const PrescriptionList = ({ userId, onSelectPrescription }) => {
+const PrescriptionList = ({ userId, onSelectPrescription, onSelectedPrescriptionStatus }) => {
     const [prescriptions, setPrescriptions] = useState([]);
 
     useEffect(() => {
@@ -29,7 +29,10 @@ const PrescriptionList = ({ userId, onSelectPrescription }) => {
                     borderWidth={1} 
                     borderRadius="lg" 
                     cursor="pointer" 
-                    onClick={() => onSelectPrescription(prescription._id)}
+                    onClick={() => {
+                        onSelectPrescription(prescription._id) 
+                        onSelectedPrescriptionStatus(prescription.status)
+                    }}
                 >
                     <Text>Prescription {index + 1}</Text>
                     <Flex direction="column" align="flex-end">
