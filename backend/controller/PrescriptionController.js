@@ -1,5 +1,6 @@
 const PrescriptionSchema = require('../models/Prescription.schema');
 const Medicine = require('../models/Medicine.schema');
+const InventoryService = require('../models/Inventory.schema');
 
 const axios = require('axios');
 
@@ -94,18 +95,37 @@ const prescriptionController = {
         try {
             // Find prescription by ID
             const prescription = await PrescriptionSchema.findById(req.params.prescriptionId);
+            const { pharmacyId } = req.query;
     
             if (!prescription) {
                 return res.status(404).json({ message: "Prescription not found" });
             }
     
-            // Fetch medicine details for each medication ID in the prescription
+            // Get pharmacy inventory
+            const pharmacyInventory = await InventoryService.findOne({ pharmacyId })
+                .populate('medications.medication');
+    
+            if (!pharmacyInventory) {
+                return res.status(404).json({ message: "Pharmacy inventory not found" });
+            }
+    
+            // Fetch medicine details and check availability
             const medicines = await Promise.all(
                 prescription.medications.map(async (med) => {
                     const medicine = await Medicine.findOne({ medicationId: med.medicationId });
                     if (!medicine) {
                         throw new Error(`Medicine not found for ID: ${med.medicationId}`);
                     }
+    
+                    // Find medicine in pharmacy inventory
+                    const inventoryItem = pharmacyInventory.medications.find(
+                        invMed => invMed.medication.medicationId === med.medicationId
+                    );
+                    console
+    
+                    // Check if quantity is available
+                    const availability = inventoryItem ? inventoryItem.quantity >= med.quantity : false;
+    
                     return {
                         medicationId: med.medicationId,
                         name: medicine.name,
@@ -116,6 +136,8 @@ const prescriptionController = {
                         price: medicine.price,
                         sideEffects: medicine.sideEffects,
                         instructions: med.instructions,
+                        availability, // Add availability boolean
+                        availableQuantity: inventoryItem ? inventoryItem.quantity : 0,
                     };
                 })
             );
@@ -125,7 +147,7 @@ const prescriptionController = {
             console.error("Error fetching medicine details:", error.message);
             res.status(500).json({ message: "Error fetching medicine details", error: error.message });
         }
-    },    
+    },
 
     updatePrescriptionStatus: async (req, res) => {
         try {

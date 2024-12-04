@@ -19,16 +19,24 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import axios from "axios";
+import useUserStore from "../../hooks/useUserStore";
 
 const MedicineDetails = ({ prescriptionId, onBack }) => {
   const [medicineDetails, setMedicineDetails] = useState([]);
+  const [quantityErrors, setQuantityErrors] = useState({});
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { user } = useUserStore();
 
   useEffect(() => {
     const fetchMedicineDetails = async () => {
       try {
         const response = await axios.get(
-          `/pharmacy-api/prescriptions/${prescriptionId}/medicine-details`
+          `/pharmacy-api/prescriptions/${prescriptionId}/medicine-details`,
+          {
+            params: {
+              pharmacyId: user.pharmacyId.pharmacyId
+            }
+          }
         );
         setMedicineDetails(response.data.medicines.map(med => ({
           ...med,
@@ -43,14 +51,35 @@ const MedicineDetails = ({ prescriptionId, onBack }) => {
 
   const handleQuantityChange = (index, value) => {
     const newMedicineDetails = [...medicineDetails];
-    newMedicineDetails[index].currentQuantity = Number(value);
+    const newQuantityErrors = { ...quantityErrors };
+    const medicine = newMedicineDetails[index];
+    const newQuantity = Number(value);
+  
+    // Update quantity regardless of availability
+    medicine.currentQuantity = newQuantity;
+  
+    // Validate quantity against available stock
+    if (medicine.availability && newQuantity > medicine.availableQuantity) {
+      newQuantityErrors[index] = "Not enough stock";
+    } else {
+      delete newQuantityErrors[index];
+    }
+  
+    setQuantityErrors(newQuantityErrors);
     setMedicineDetails(newMedicineDetails);
   };
-
+  
   const calculateTotal = () => {
     return medicineDetails.reduce(
       (total, medicine) => total + (medicine.price * medicine.currentQuantity || 0),
       0
+    );
+  };
+
+  const canProceedToBilling = () => {
+    return !medicineDetails.some(medicine => 
+      (medicine.availability && medicine.currentQuantity > medicine.availableQuantity) || 
+      (!medicine.availability && medicine.currentQuantity !== 0)
     );
   };
 
@@ -97,11 +126,12 @@ const MedicineDetails = ({ prescriptionId, onBack }) => {
                 <Box>
                   <Text fontSize="sm" color="gray.600">Quantity:</Text>
                   <NumberInput
-                    min={1}
-                    max={medicine.availability ? 999 : medicine.quantity}
+                    min={0}
+                    max={medicine.availableQuantity || 0}
                     value={medicine.currentQuantity}
                     onChange={(value) => handleQuantityChange(index, value)}
                     size="sm"
+                    isInvalid={!!quantityErrors[index]}
                   >
                     <NumberInputField />
                     <NumberInputStepper>
@@ -109,20 +139,32 @@ const MedicineDetails = ({ prescriptionId, onBack }) => {
                       <NumberDecrementStepper />
                     </NumberInputStepper>
                   </NumberInput>
+
+                  {quantityErrors[index] && (
+                    <Text color="red.500" fontSize="sm" mt={1}>
+                      {quantityErrors[index]}
+                    </Text>
+                  )}
                 </Box>
-                <Box textAlign="right">
-                  <Text fontSize="sm" color="gray.600">Price:</Text>
-                  <Text fontWeight="semibold">
-                    ${(medicine.price * medicine.currentQuantity).toFixed(2)}
-                  </Text>
+                <Box>
+                  <Text fontSize="sm" color="gray.600">Available:</Text>
+                  <Text fontWeight="semibold">{medicine.availableQuantity}</Text>
                 </Box>
                 <Box>
                   <Text
                     fontSize="sm"
-                    color={medicine.availability ? "green.500" : "red.500"}
+                    color={medicine.availability 
+                      ? quantityErrors[index] 
+                        ? "orange.500" 
+                        : "green.500" 
+                      : "red.500"}
                     fontWeight="medium"
                   >
-                    {medicine.availability ? "In Stock" : "Out of Stock"}
+                    {medicine.availability 
+                      ? quantityErrors[index]
+                        ? "Not enough stock"
+                        : "In Stock"
+                      : "Out of Stock"}
                   </Text>
                 </Box>
               </Flex>
@@ -154,6 +196,7 @@ const MedicineDetails = ({ prescriptionId, onBack }) => {
           color="white"
           _hover={{ bg: "var(--button_hover)" }}
           onClick={onOpen}
+          isDisabled={!canProceedToBilling()}
         >
           Continue to Billing
         </Button>
