@@ -1,11 +1,18 @@
-import React, { useState } from 'react';
+// PrescriptionManagement.jsx
+import { useState } from 'react';
 import { Box, Input, Button, VStack, Text } from '@chakra-ui/react';
 import PrescriptionList from './PrescriptionList';
 import MedicineDetails from './MedicineDetails';
+import usePrescriptionStore from '../../hooks/usePrescriptionStore';
 
 const PrescriptionManagement = () => {
     const [userId, setUserId] = useState('');
-    const [selectedPrescription, setSelectedPrescription] = useState(null);
+    const { selectedPrescription, setSelectedPrescription, setPrescriptionUser, prescriptionUser } = usePrescriptionStore();
+    
+    const handleSearch = () => {
+        setPrescriptionUser(userId); // Update global state only on search
+        console.log("The prescriptionUser is, ", prescriptionUser);
+    };
 
     return (
         <Box>
@@ -21,14 +28,14 @@ const PrescriptionManagement = () => {
                     <Input
                         placeholder="Enter User ID"
                         value={userId}
-                        onChange={(e) => setUserId(e.target.value)}
+                        onChange={(e) => setUserId(e.target.value)} // Fix: Use local state
                     />
 
-                    <Button onClick={() => setSelectedPrescription(null)}>Search</Button>
+                    <Button onClick={handleSearch}>Search</Button>
 
                     {userId && (
                         <PrescriptionList
-                            userId={userId}
+                            userId={prescriptionUser}
                             onSelectPrescription={setSelectedPrescription}
                         />
                     )}
