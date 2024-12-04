@@ -102,7 +102,7 @@ const routes = createBrowserRouter([
 						)
 					},
 					{
-						path:"feedback",
+						path:"customer-feedback",
 						element:<UserFeedback />
 					}
 					

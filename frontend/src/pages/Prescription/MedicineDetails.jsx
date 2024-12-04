@@ -24,7 +24,8 @@ import axios from "axios";
 import useUserStore from "../../hooks/useUserStore";
 import usePrescriptionStore from "../../hooks/usePrescriptionStore";
 import Cookies from "js-cookie";
-import { FiPrinter, FiDownload } from 'react-icons/fi';
+import { FiDownload } from 'react-icons/fi';
+import { useNavigate } from "react-router-dom";
 
 
 const MedicineDetails = ({ prescriptionId, onBack }) => {
@@ -73,6 +74,21 @@ const MedicineDetails = ({ prescriptionId, onBack }) => {
     };
     fetchMedicineDetails();
   }, [prescriptionId]);
+
+  const navigate = useNavigate();
+
+
+  const handlePdfModalClose = () => {
+    onPdfClose();
+    // Navigate to feedback page with pharmacy and prescription info
+    navigate('/dashboard/customer-feedback', {
+      state: {
+        pharmacyId: user.pharmacyId.pharmacyId,
+        prescriptionId: selectedPrescription,
+        patientId: prescriptionUser
+      }
+    });
+  }
 
   const handleQuantityChange = (index, value) => {
     const newMedicineDetails = [...medicineDetails];
@@ -338,7 +354,7 @@ const MedicineDetails = ({ prescriptionId, onBack }) => {
           </ModalContent>
         </Modal>
         {/* PDF Modal */}
-      <Modal isOpen={isPdfOpen} onClose={onPdfClose} size="6xl">
+      <Modal isOpen={isPdfOpen} onClose={handlePdfModalClose} size="6xl">
         <ModalOverlay />
         <ModalContent maxW="900px" h="90vh">
           <ModalHeader>Bill PDF</ModalHeader>
@@ -366,7 +382,7 @@ const MedicineDetails = ({ prescriptionId, onBack }) => {
             >
               Download
             </Button>
-            <Button variant="ghost" onClick={onPdfClose}>
+            <Button variant="ghost" onClick={handlePdfModalClose}>
               Close
             </Button>
           </ModalFooter>
