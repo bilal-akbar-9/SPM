@@ -62,7 +62,58 @@ const InventoryController = {
         console.error('Error fetching low-stock inventories:', error);
         res.status(500).json({ message: "Internal Server Error." });
     }
+  },
+   updateQuantity : async (req, res) => {
+    const { pharmacyId } = req.params;
+    const { medicationId, quantity } = req.body;
+  
+    try {
+      // Validate the input
+      if (!medicationId || quantity === undefined || quantity < 0) {
+        return res.status(400).json({
+          message: "Invalid input. Medication ID and a non-negative quantity are required.",
+        });
+      }
+  
+      // Find the inventory record for the given pharmacy
+      const inventory = await InventoryService.findOne({ pharmacyId });
+  
+      if (!inventory) {
+        return res.status(404).json({
+          message: "Pharmacy inventory not found.",
+        });
+      }
+  
+      // Find the medication within the inventory
+      const medication = inventory.medications.find(
+        (med) => med.medication.toString() === medicationId
+      );
+  
+      if (!medication) {
+        return res.status(404).json({
+          message: "Medication not found in inventory.",
+        });
+      }
+  
+      // Update the quantity
+      medication.quantity = quantity;
+  
+      // Save the updated inventory
+      await inventory.save();
+  
+      return res.status(200).json({
+        message: "Quantity updated successfully.",
+        updatedMedication: medication,
+      });
+    } catch (error) {
+      console.error("Error updating quantity:", error);
+      return res.status(500).json({
+        message: "An error occurred while updating the quantity.",
+        error: error.message,
+      });
+    }
   }
+  
 
 };
 

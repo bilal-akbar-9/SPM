@@ -6,5 +6,7 @@ router.get('/',InventoryController.getAllInventories);
 
 router.get('/notification',InventoryController.getLowStockInventories)
 
+router.put('/:pharmacyId/update',InventoryController.updateQuantity)
+
 
 module.exports = router;
