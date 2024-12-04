@@ -11,7 +11,6 @@ const PrescriptionManagement = () => {
     
     const handleSearch = () => {
         setPrescriptionUser(userId); // Update global state only on search
-        console.log("The prescriptionUser is, ", prescriptionUser);
     };
 
     return (

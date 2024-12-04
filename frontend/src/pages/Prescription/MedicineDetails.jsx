@@ -17,15 +17,40 @@ import {
   ModalBody,
   ModalFooter,
   useDisclosure,
+  useToast,
+  ModalCloseButton
 } from "@chakra-ui/react";
 import axios from "axios";
 import useUserStore from "../../hooks/useUserStore";
+import usePrescriptionStore from "../../hooks/usePrescriptionStore";
+import Cookies from "js-cookie";
+import { FiPrinter, FiDownload } from 'react-icons/fi';
+
 
 const MedicineDetails = ({ prescriptionId, onBack }) => {
+  const toast = useToast();
   const [medicineDetails, setMedicineDetails] = useState([]);
   const [quantityErrors, setQuantityErrors] = useState({});
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { user } = useUserStore();
+  const { prescriptionUser, selectedPrescription } = usePrescriptionStore()
+  const [billingLoading, setBillingLoading] = useState(false);
+  
+  // PDF Modal
+  const [pdfData, setPdfData] = useState(null);
+  const { 
+    isOpen: isPdfOpen, 
+    onOpen: onPdfOpen, 
+    onClose: onPdfClose 
+  } = useDisclosure();
+
+  useEffect(() => {
+    return () => {
+      if (pdfData) {
+        URL.revokeObjectURL(pdfData);
+      }
+    };
+  }, [pdfData]);
 
   useEffect(() => {
     const fetchMedicineDetails = async () => {
@@ -83,11 +108,64 @@ const MedicineDetails = ({ prescriptionId, onBack }) => {
     );
   };
 
-  const proceedToBilling = () => {
-    onClose();
-    // Add billing navigation logic here
+  const proceedToBilling = async () => {
+    setBillingLoading(true);
+    try {
+      const billingData = {
+        prescriptionId: selectedPrescription,
+        patientId: "672e31eb54819b9cb2e17942",
+        medicines: medicineDetails
+          .filter(medicine => medicine.currentQuantity > 0)
+          .map(medicine => ({
+            medicineId: medicine.medicationId,
+            medicineName: medicine.name,
+            medicineQuantity: medicine.currentQuantity,
+            medicineUnitPrice: medicine.price
+          }))
+      };
+  
+      const response = await axios.post(
+        import.meta.env.VITE_BILLING_API_URL,
+        billingData,
+        {
+          headers: { 
+            Authorization: `Bearer ${Cookies.get("token")}`,
+          }
+        }
+      );
+  
+      // Fix PDF blob creation
+      const base64Data = response.data.pdf;
+      const binaryData = atob(base64Data);
+      const byteArray = new Uint8Array(binaryData.length);
+      for (let i = 0; i < binaryData.length; i++) {
+        byteArray[i] = binaryData.charCodeAt(i);
+      }
+      
+      const pdfBlob = new Blob([byteArray], { type: 'application/pdf' });
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      setPdfData(pdfUrl);
+      onClose(); // Close confirmation modal
+      onPdfOpen(); // Open PDF modal
+  
+      toast({
+        title: "Billing Successful",
+        description: "Your bill has been generated",
+        status: "success",
+        duration: 5000,
+      });
+  
+    } catch (error) {
+      toast({
+        title: "Error generating bill",
+        description: error.response?.data?.message || "Something went wrong",
+        status: "error",
+        duration: 5000,
+      });
+    } finally {
+      setBillingLoading(false);
+    }
   };
-
   return (
     <VStack spacing={4} align="stretch" bg="var(--background)" p={6} borderRadius="xl">
       <Flex justify="space-between" align="center">
@@ -238,6 +316,41 @@ const MedicineDetails = ({ prescriptionId, onBack }) => {
               onClick={proceedToBilling}
             >
               Proceed to Billing
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+      {/* PDF Modal  */}
+      <Modal isOpen={isPdfOpen} onClose={onPdfClose} size="6xl">
+        <ModalOverlay />
+        <ModalContent maxW="900px" h="90vh">
+          <ModalHeader>Bill PDF</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            {pdfData && (
+              <iframe
+                src={pdfData}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  border: 'none'
+                }}
+              />
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              as="a"
+              href={pdfData}
+              download="bill.pdf"
+              leftIcon={<FiDownload />}
+              colorScheme="green"
+              mr={3}
+            >
+              Download
+            </Button>
+            <Button variant="ghost" onClick={onPdfClose}>
+              Close
             </Button>
           </ModalFooter>
         </ModalContent>

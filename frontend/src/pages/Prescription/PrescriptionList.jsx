@@ -10,7 +10,6 @@ const PrescriptionList = ({ userId, onSelectPrescription }) => {
             try {
                 const response = await axios.get(`/pharmacy-api/prescriptions/patient/${userId}/valid-prescriptions`);
                 setPrescriptions(response.data);
-                console.log(response.data)
             } catch (error) {
                 console.error("Error fetching prescriptions", error);
             }
