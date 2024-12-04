@@ -134,27 +134,42 @@ const MedicineDetails = ({ prescriptionId, onBack }) => {
         }
       );
   
-      // Fix PDF blob creation
-      const base64Data = response.data.pdf;
-      const binaryData = atob(base64Data);
-      const byteArray = new Uint8Array(binaryData.length);
-      for (let i = 0; i < binaryData.length; i++) {
-        byteArray[i] = binaryData.charCodeAt(i);
+      // Update prescription status after successful billing
+      if (response.data.success) {
+        await axios.patch(
+          `/pharmacy-api/prescriptions/${selectedPrescription}/status`,
+          {
+            status: "Fulfilled",
+            billId: response.data.data._id // Add bill ID to prescription
+          },
+          {
+            headers: { 
+              Authorization: `Bearer ${Cookies.get("token")}` 
+            }
+          }
+        );
+  
+        // Handle PDF display
+        const base64Data = response.data.pdf;
+        const binaryData = atob(base64Data);
+        const byteArray = new Uint8Array(binaryData.length);
+        for (let i = 0; i < binaryData.length; i++) {
+          byteArray[i] = binaryData.charCodeAt(i);
+        }
+        
+        const pdfBlob = new Blob([byteArray], { type: 'application/pdf' });
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+        setPdfData(pdfUrl);
+        onClose(); // Close confirmation modal
+        onPdfOpen(); // Open PDF modal
+  
+        toast({
+          title: "Billing Successful",
+          description: "Your bill has been generated",
+          status: "success",
+          duration: 5000,
+        });
       }
-      
-      const pdfBlob = new Blob([byteArray], { type: 'application/pdf' });
-      const pdfUrl = URL.createObjectURL(pdfBlob);
-      setPdfData(pdfUrl);
-      onClose(); // Close confirmation modal
-      onPdfOpen(); // Open PDF modal
-  
-      toast({
-        title: "Billing Successful",
-        description: "Your bill has been generated",
-        status: "success",
-        duration: 5000,
-      });
-  
     } catch (error) {
       toast({
         title: "Error generating bill",
@@ -281,46 +296,48 @@ const MedicineDetails = ({ prescriptionId, onBack }) => {
       </Box>
 
       {/* Confirmation Modal */}
-      <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader color="var(--text)">Confirm Order</ModalHeader>
-          <ModalBody>
-            <Text mb={4}>Are you sure you want to proceed with the following order?</Text>
-            <VStack align="stretch" spacing={2}>
-              {medicineDetails.map((medicine, index) => (
-                <Flex key={index} justify="space-between">
-                  <Text>{medicine.name}</Text>
-                  <Text>
-                    {medicine.currentQuantity} × ${medicine.price.toFixed(2)} = $
-                    {(medicine.currentQuantity * medicine.price.toFixed(2)).toFixed(2)}
-                  </Text>
-                </Flex>
-              ))}
-              <Box pt={4} borderTop="1px" borderColor="gray.200">
-                <Flex justify="space-between">
-                  <Text fontWeight="bold">Total:</Text>
-                  <Text fontWeight="bold">${calculateTotal().toFixed(2)}</Text>
-                </Flex>
-              </Box>
-            </VStack>
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={onClose}>
-              Cancel
-            </Button>
-            <Button
-              bg="var(--primary)"
-              color="white"
-              _hover={{ bg: "var(--button_hover)" }}
-              onClick={proceedToBilling}
-            >
-              Proceed to Billing
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-      {/* PDF Modal  */}
+        <Modal isOpen={isOpen} onClose={onClose}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader color="var(--text)">Confirm Order</ModalHeader>
+            <ModalBody>
+          <Text mb={4}>Are you sure you want to proceed with the following order?</Text>
+          <VStack align="stretch" spacing={2}>
+            {medicineDetails.map((medicine, index) => (
+              <Flex key={index} justify="space-between">
+            <Text>{medicine.name}</Text>
+            <Text>
+              {medicine.currentQuantity} × ${medicine.price.toFixed(2)} = $
+              {(medicine.currentQuantity * medicine.price.toFixed(2)).toFixed(2)}
+            </Text>
+              </Flex>
+            ))}
+            <Box pt={4} borderTop="1px" borderColor="gray.200">
+              <Flex justify="space-between">
+            <Text fontWeight="bold">Total:</Text>
+            <Text fontWeight="bold">${calculateTotal().toFixed(2)}</Text>
+              </Flex>
+            </Box>
+          </VStack>
+            </ModalBody>
+            <ModalFooter>
+          <Button variant="ghost" mr={3} onClick={onClose} isDisabled={billingLoading}>
+            Cancel
+          </Button>
+          <Button
+            bg="var(--primary)"
+            color="white"
+            _hover={{ bg: "var(--button_hover)" }}
+            onClick={proceedToBilling}
+            isLoading={billingLoading}
+            loadingText="Processing"
+          >
+            Proceed to Billing
+          </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+        {/* PDF Modal */}
       <Modal isOpen={isPdfOpen} onClose={onPdfClose} size="6xl">
         <ModalOverlay />
         <ModalContent maxW="900px" h="90vh">

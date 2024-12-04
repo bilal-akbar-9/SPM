@@ -28,6 +28,9 @@ const PrescriptionSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
+    billId: {
+        type: String,
+    },
 });
 
 const model = mongoose.model("Prescription", PrescriptionSchema);

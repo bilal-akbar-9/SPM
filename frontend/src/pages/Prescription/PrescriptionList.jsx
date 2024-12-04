@@ -32,7 +32,19 @@ const PrescriptionList = ({ userId, onSelectPrescription }) => {
                     onClick={() => onSelectPrescription(prescription._id)}
                 >
                     <Text>Prescription {index + 1}</Text>
-                    <Text fontSize="sm" color="gray.600">{new Date(prescription.createdAt).toLocaleDateString()}</Text>
+                    <Flex direction="column" align="flex-end">
+                        <Text fontSize="sm" color="gray.600">{new Date(prescription.createdAt).toLocaleDateString()}</Text>
+                        <Text 
+                            fontSize="sm" 
+                            color={
+                                prescription.status === "Pending" ? "orange.500" :
+                                prescription.status === "Fulfilled" ? "green.500" :
+                                "red.500"
+                            }
+                        >
+                            {prescription.status}
+                        </Text>
+                    </Flex>
                 </Flex>
             ))}
         </VStack>
