@@ -1,5 +1,7 @@
 const PrescriptionSchema = require('../models/Prescription.schema');
-const MedicineSchema = require('../models/Medicine.schema');
+const Medicine = require('../models/Medicine.schema');
+
+const axios = require('axios');
 
 const prescriptionController = {
     getAllPrescriptions: async (req, res) => {
@@ -32,8 +34,15 @@ const prescriptionController = {
             }
 
             for (const med of medications) {
-                const medicineExists = await MedicineSchema.findOne({ _id: med.medicationId });
-                if (!medicineExists) {
+                const response = await axios.get(
+                    `${process.env.VITE_API_URL}/pharmacy-api/medicine/${med.medicationId}`,
+                    {
+                        headers: {
+                            Authorization: req.headers.authorization, // Forward token for validation
+                        },
+                    }
+                );
+                if (!response.data) {
                     return res.status(400).json({ message: `Medicine with ID ${med.medicationId} not found` });
                 }
             }
@@ -68,7 +77,13 @@ const prescriptionController = {
             const prescriptions = await PrescriptionSchema.find({
                 patientId: req.params.patientId,
                 status: { $in: ['Pending', 'Fulfilled'] },
-            });
+            }).populate({
+                path: 'medications.medicationId',
+                model: 'Medicine',
+                localField: 'medications.medicationId',
+                foreignField: 'medicationId'
+              });
+              console.log(prescriptions)
             res.status(200).json(prescriptions);
         } catch (error) {
             res.status(500).json({ message: 'Error fetching valid prescriptions', error: error.message });
@@ -77,21 +92,40 @@ const prescriptionController = {
 
     getMedicineDetails: async (req, res) => {
         try {
-            const prescription = await PrescriptionSchema.findById(req.params.prescriptionId).populate('medications.medicationId');
+            // Find prescription by ID
+            const prescription = await PrescriptionSchema.findById(req.params.prescriptionId);
+    
             if (!prescription) {
-                return res.status(404).json({ message: 'Prescription not found' });
+                return res.status(404).json({ message: "Prescription not found" });
             }
-            const medicines = prescription.medications.map(med => ({
-                medicationId: med.medicationId,
-                dosage: med.dosage,
-                quantity: med.quantity,
-                instructions: med.instructions,
-            }));
+    
+            // Fetch medicine details for each medication ID in the prescription
+            const medicines = await Promise.all(
+                prescription.medications.map(async (med) => {
+                    const medicine = await Medicine.findOne({ medicationId: med.medicationId });
+                    if (!medicine) {
+                        throw new Error(`Medicine not found for ID: ${med.medicationId}`);
+                    }
+                    return {
+                        medicationId: med.medicationId,
+                        name: medicine.name,
+                        description: medicine.description,
+                        manufacturer: medicine.manufacturer,
+                        dosage: med.dosage,
+                        quantity: med.quantity,
+                        price: medicine.price,
+                        sideEffects: medicine.sideEffects,
+                        instructions: med.instructions,
+                    };
+                })
+            );
+    
             res.status(200).json({ medicines });
         } catch (error) {
-            res.status(500).json({ message: 'Error fetching medicine details', error: error.message });
+            console.error("Error fetching medicine details:", error.message);
+            res.status(500).json({ message: "Error fetching medicine details", error: error.message });
         }
-    },
+    },    
 
     updatePrescriptionStatus: async (req, res) => {
         try {

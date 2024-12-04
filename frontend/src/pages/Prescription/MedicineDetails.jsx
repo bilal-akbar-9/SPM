@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Text, VStack, Button } from '@chakra-ui/react';
+import { Box, Text, VStack, Flex, Button } from '@chakra-ui/react';
 import axios from 'axios';
 
 const MedicineDetails = ({ prescriptionId, onBack }) => {
@@ -10,6 +10,7 @@ const MedicineDetails = ({ prescriptionId, onBack }) => {
             try {
                 const response = await axios.get(`/pharmacy-api/prescriptions/${prescriptionId}/medicine-details`);
                 setMedicineDetails(response.data.medicines);
+                console.log(response.data.medicines)
             } catch (error) {
                 console.error("Error fetching medicine details", error);
             }
@@ -17,31 +18,32 @@ const MedicineDetails = ({ prescriptionId, onBack }) => {
         fetchMedicineDetails();
     }, [prescriptionId]);
 
-    const handleProceedToBilling = async () => {
-        try {
-            await axios.patch(`/pharmacy-api/prescriptions/${prescriptionId}/status`, { status: 'Inprogress' });
-            window.location.href = '/pharmacy-api/billing'; // Redirect to billing page
-        } catch (error) {
-            console.error("Error updating prescription status", error);
-        }
-    };
-
     return (
         <VStack spacing={4} align="stretch">
             <Button onClick={onBack} colorScheme="blue">Back to Prescriptions</Button>
             <Text fontSize="lg" fontWeight="bold">Medicine Details</Text>
             {medicineDetails.map((medicine, index) => (
-                <Box key={index} p={4} borderWidth={1} borderRadius="lg">
-                    <Text fontWeight="bold">Medicine: {medicine.name}</Text>
-                    <Text>Description: {medicine.description}</Text>
-                    <Text>Price: ${medicine.price}</Text>
-                    <Text>Availability: {medicine.availability ? 'In Stock' : 'Out of Stock'}</Text>
-                    <Text>Dosage: {medicine.dosage}</Text>
-                    <Text>Quantity: {medicine.quantity}</Text>
-                    <Text>Instructions: {medicine.instructions}</Text>
-                </Box>
+                <Flex 
+                    key={index} 
+                    p={4} 
+                    borderWidth={1} 
+                    borderRadius="lg" 
+                    justifyContent="space-between" 
+                    alignItems="center"
+                >
+                    <Box>
+                        <Text fontWeight="bold">{medicine.name}</Text>
+                    </Box>
+                    <Box textAlign="right">
+                        <Text>
+                            ${medicine.price !== undefined && medicine.price !== null ? medicine.price.toFixed(2) : "N/A"}
+                        </Text>
+                        <Text color={medicine.availability ? "green.500" : "red.500"}>
+                            {medicine.availability ? "In Stock" : "Out of Stock"}
+                        </Text>
+                    </Box>
+                </Flex>
             ))}
-            <Button onClick={handleProceedToBilling} colorScheme="green">Proceed to Billing</Button>
         </VStack>
     );
 };
