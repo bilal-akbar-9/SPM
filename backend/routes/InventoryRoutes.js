@@ -4,5 +4,7 @@ const InventoryController=require('../controller/InventoryController');
 
 router.get('/',InventoryController.getAllInventories);
 
+router.get('/notification',InventoryController.getLowStockInventories)
+
 
 module.exports = router;

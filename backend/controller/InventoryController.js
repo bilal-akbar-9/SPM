@@ -47,6 +47,23 @@ const InventoryController = {
       res.status(500).json({ message: "Internal server error" });
     }
   },
+   getLowStockInventories : async (req, res) => {
+    try {
+        const lowStockInventories = await InventoryService.find({
+            'medications.quantity': { $lt: 20 }
+        }).populate('medications.medication');
+
+        if (!lowStockInventories.length) {
+            return res.status(404).json({ message: "No low-stock inventories found." });
+        }
+
+        res.status(200).json({ inventories: lowStockInventories });
+    } catch (error) {
+        console.error('Error fetching low-stock inventories:', error);
+        res.status(500).json({ message: "Internal Server Error." });
+    }
+  }
+
 };
 
 module.exports = InventoryController;
