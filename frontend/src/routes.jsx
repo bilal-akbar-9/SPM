@@ -21,6 +21,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import UserManagement from "./pages/Admin/UserManagement/UserManagement";
 import SupplierManagement from "./pages/Admin/SupplierManagement";
 
+import UserFeedback from "./pages/Billing/UserFeedback";
+
 
 
 import ErrorPage from "./pages/ErrorPage";
@@ -98,7 +100,12 @@ const routes = createBrowserRouter([
 								<Notifications />
 							</ProtectedRoute>
 						)
+					},
+					{
+						path:"feedback",
+						element:<UserFeedback />
 					}
+					
 				],
 			},
 		],
