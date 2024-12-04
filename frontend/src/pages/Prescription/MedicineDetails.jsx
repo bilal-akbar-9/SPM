@@ -254,11 +254,141 @@ const MedicineDetails = ({ prescriptionId, onBack }) => {
         >
           Back to Prescriptions
         </Button>
-        <Text fontSize="xl" fontWeight="bold" color="var(--text)">
+      </Flex>
+      {selectedPrescriptionStatus === "Fulfilled" && (
+        <Box textAlign="center" py={6}>
+          <Heading size="xl" color="var(--primary)">
+            Prescription has been processed and billed
+          </Heading>
+        </Box>
+      )}
+
+      {selectedPrescriptionStatus === "Fulfilled" && (
+        <>
+         
+          
+          <Box 
+            bg="white" 
+            p={8} 
+            borderRadius="xl" 
+            boxShadow="lg"
+            transition="all 0.2s"
+            _hover={{ transform: "translateY(-2px)", boxShadow: "xl" }}
+          >
+            <VStack align="stretch" spacing={6}>
+              <Heading 
+                size="md" 
+                color="var(--text)"
+                borderBottom="2px solid"
+                borderColor="var(--primary)"
+                pb={2}
+              >
+                Customer Feedback
+              </Heading>
+              
+              {feedback ? (
+                <VStack align="stretch" spacing={6}>
+                  <Box 
+                    bg="gray.50" 
+                    p={4} 
+                    borderRadius="lg"
+                    border="1px"
+                    borderColor="gray.100"
+                  >
+                    <VStack align="stretch" spacing={3}>
+                      <Flex align="center" gap={4}>
+                        <Text fontWeight="bold" color="var(--text)">Rating:</Text>
+                        <Box>
+                          <ReactStars
+                            value={feedback.rating}
+                            edit={false}
+                            size={24}
+                            activeColor="var(--primary)"
+                            color="gray.200"
+                            isHalf={false}
+                          />
+                        </Box>
+                        <Text color="var(--accent)" fontWeight="bold">
+                          {feedback.rating}/5
+                        </Text>
+                      </Flex>
+                      
+                      <Box>
+                        <Text 
+                          fontWeight="bold" 
+                          mb={2} 
+                          color="var(--text)"
+                        >
+                          Review:
+                        </Text>
+                        <Text 
+                          color="gray.700"
+                          p={3}
+                          bg="white"
+                          borderRadius="md"
+                          borderWidth="1px"
+                          borderColor="gray.200"
+                        >
+                          {feedback.review}
+                        </Text>
+                      </Box>
+                      
+                      <Flex 
+                        align="center" 
+                        gap={2}
+                        p={3}
+                        bg="var(--background)"
+                        borderRadius="md"
+                      >
+                        <Text fontWeight="bold" color="var(--text)">
+                          Pharmacist:
+                        </Text>
+                        <Text color="var(--accent)">
+                          {feedback.pharmacist}
+                        </Text>
+                        </Flex>
+                        <Flex 
+                        align="center" 
+                        gap={2}
+                        p={3}
+                        bg="var(--background)"
+                        borderRadius="md"
+                      >
+                        <Text fontWeight="bold" color="var(--text)">
+                          Customer ID:
+                        </Text>
+                        <Text color="var(--accent)">
+                          {feedback.userId}
+                        </Text>
+                      </Flex>
+                    </VStack>
+                  </Box>
+                </VStack>
+              ) : (
+                <Box 
+                  p={6} 
+                  textAlign="center" 
+                  bg="gray.50" 
+                  borderRadius="lg"
+                >
+                  <Text 
+                    color="gray.500"
+                    fontSize="lg"
+                  >
+                    No feedback available
+                  </Text>
+                </Box>
+              )}
+            </VStack>
+          </Box>
+
+          <Divider my={8} borderColor="var(--accent)" borderWidth={2} opacity={0.3} />
+        </>
+      )}
+
+        <Text fontSize="xl" fontWeight="bold" color="var(--text)" textAlign="right">
           Medicine Details
         </Text>
-      </Flex>
-
       {medicineDetails.map((medicine, index) => (
         <Box
           key={index}
@@ -287,6 +417,7 @@ const MedicineDetails = ({ prescriptionId, onBack }) => {
                     onChange={(value) => handleQuantityChange(index, value)}
                     size="sm"
                     isInvalid={!!quantityErrors[index]}
+                    isDisabled={selectedPrescriptionStatus === "Fulfilled"}
                   >
                     <NumberInputField />
                     <NumberInputStepper>
@@ -351,7 +482,7 @@ const MedicineDetails = ({ prescriptionId, onBack }) => {
           color="white"
           _hover={{ bg: "var(--button_hover)" }}
           onClick={onOpen}
-          isDisabled={!canProceedToBilling()}
+          isDisabled={!canProceedToBilling() || selectedPrescriptionStatus === "Fulfilled"}
         >
           Continue to Billing
         </Button>
@@ -434,126 +565,6 @@ const MedicineDetails = ({ prescriptionId, onBack }) => {
           </ModalFooter>
         </ModalContent>
       </Modal>
-      {selectedPrescriptionStatus === "Fulfilled" && (
-      <>
-        <Divider my={8} borderColor="var(--accent)" borderWidth={2} opacity={0.3} />
-        
-        <Box 
-          bg="white" 
-          p={8} 
-          borderRadius="xl" 
-          boxShadow="lg"
-          transition="all 0.2s"
-          _hover={{ transform: "translateY(-2px)", boxShadow: "xl" }}
-        >
-          <VStack align="stretch" spacing={6}>
-            <Heading 
-              size="md" 
-              color="var(--text)"
-              borderBottom="2px solid"
-              borderColor="var(--primary)"
-              pb={2}
-            >
-              Customer Feedback
-            </Heading>
-            
-            {feedback ? (
-              <VStack align="stretch" spacing={6}>
-                <Box 
-                  bg="gray.50" 
-                  p={4} 
-                  borderRadius="lg"
-                  border="1px"
-                  borderColor="gray.100"
-                >
-                  <VStack align="stretch" spacing={3}>
-                    <Flex align="center" gap={4}>
-                      <Text fontWeight="bold" color="var(--text)">Rating:</Text>
-                      <Box>
-                        <ReactStars
-                          value={feedback.rating}
-                          edit={false}
-                          size={24}
-                          activeColor="var(--primary)"
-                          color="gray.200"
-                          isHalf={false}
-                        />
-                      </Box>
-                      <Text color="var(--accent)" fontWeight="bold">
-                        {feedback.rating}/5
-                      </Text>
-                    </Flex>
-                    
-                    <Box>
-                      <Text 
-                        fontWeight="bold" 
-                        mb={2} 
-                        color="var(--text)"
-                      >
-                        Review:
-                      </Text>
-                      <Text 
-                        color="gray.700"
-                        p={3}
-                        bg="white"
-                        borderRadius="md"
-                        borderWidth="1px"
-                        borderColor="gray.200"
-                      >
-                        {feedback.review}
-                      </Text>
-                    </Box>
-                    
-                    <Flex 
-                      align="center" 
-                      gap={2}
-                      p={3}
-                      bg="var(--background)"
-                      borderRadius="md"
-                    >
-                      <Text fontWeight="bold" color="var(--text)">
-                        Pharmacist:
-                      </Text>
-                      <Text color="var(--accent)">
-                        {feedback.pharmacist}
-                      </Text>
-                      </Flex>
-                      <Flex 
-                      align="center" 
-                      gap={2}
-                      p={3}
-                      bg="var(--background)"
-                      borderRadius="md"
-                    >
-                      <Text fontWeight="bold" color="var(--text)">
-                        Customer ID:
-                      </Text>
-                      <Text color="var(--accent)">
-                        {feedback.userId}
-                      </Text>
-                    </Flex>
-                  </VStack>
-                </Box>
-              </VStack>
-            ) : (
-              <Box 
-                p={6} 
-                textAlign="center" 
-                bg="gray.50" 
-                borderRadius="lg"
-              >
-                <Text 
-                  color="gray.500"
-                  fontSize="lg"
-                >
-                  No feedback available
-                </Text>
-              </Box>
-            )}
-          </VStack>
-        </Box>
-      </>
-    )}
     </VStack>
   );
 };
