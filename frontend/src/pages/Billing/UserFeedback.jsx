@@ -63,7 +63,7 @@ const UserFeedback = ({ onSubmitSuccess }) => {
 
     setIsSubmitting(true);
     try {
-      await axios.post(`/pharmacy-api/pharmacies/${user.pharmacyId}/feedback`, {
+      await axios.post(`/pharmacy-api/pharmacies/${user.pharmacyId.pharmacyId}/feedback`, {
         rating,
         review: data.review,
         pharmacist: user.userId,

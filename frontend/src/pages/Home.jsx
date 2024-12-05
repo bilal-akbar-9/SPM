@@ -115,7 +115,7 @@ const Home = () => {
             opacity={0.9}
             className="italic"
           >
-            Pharmacy #{user.pharmacyId}
+            PharmacyId: {user?.pharmacyId.pharmacyId}
           </Text>
 
           <Box 

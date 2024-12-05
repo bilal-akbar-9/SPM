@@ -117,7 +117,12 @@ const userController = {
 	loginUser: async (req, res) => {
 		try {
 			const { username, password } = req.body;
-			const user = await UserSchema.findOne({ username });
+			const user = await UserSchema.findOne({ username }).populate({
+				path: "pharmacyId",
+				localField: "pharmacyId",
+				foreignField: "pharmacyId",
+				model: "Pharmacy",
+			});
 
 			if (!user) {
 				return res.status(401).json({ message: "Invalid credentials" });
