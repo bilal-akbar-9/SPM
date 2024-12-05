@@ -1,0 +1,51 @@
+.line {
+    margin-top: 10px;
+}
+
+.box{
+    width: 95%;
+}
+
+/* .radio {
+    margin-top: 10px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+} */
+
+.toggleBtn-false{
+    margin-top: 10px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: rgb(66, 66, 203);
+    color: white;
+}
+.toggleBtn-false:hover{
+    background-color: rgb(104, 104, 255);
+    color: black;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.toggleBtn-true{
+    margin-top: 10px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: rgb(255, 0, 0);
+    color: white;
+}
+
+.toggleBtn-true:hover{
+    background-color: rgb(255, 51, 51);
+    color: black;
+    cursor: pointer;
+    transition: 0.3s;
+}
