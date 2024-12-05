@@ -115,7 +115,16 @@ const Home = () => {
             opacity={0.9}
             className="italic"
           >
-            PharmacyId: {user?.pharmacyId.pharmacyId}
+            Pharmacy Name: {user?.pharmacyId.name}
+          </Text>
+          <Text
+            fontSize={{ base: "lg", md: "xl" }}
+            color="var(--text)"
+            maxW="2xl"
+            opacity={0.9}
+            className="italic"
+          >
+            PharmacyId: {user?.pharmacyId.pharmacyId.slice(-4)}
           </Text>
 
           <Box 

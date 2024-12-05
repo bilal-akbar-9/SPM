@@ -38,4 +38,11 @@ router.get("/pharmacy/:pharmacyId/prescriptionProcessed", VerifyToken, analytics
 
 router.get("/pharmacy/:pharmacyId/financials", VerifyToken, analyticsController.getFinancialAnalytics);
 
+
+/**
+ * @route POST /api/analytics/pharmacy/:pharmacyId/record
+ * @desc Add/Update analytics record after successful billing
+ */
+router.post("/pharmacy/:pharmacyId/record", VerifyToken, analyticsController.addAnalyticsRecord);
+
 module.exports = router;

@@ -66,7 +66,7 @@ const MedicineDetails = ({ prescriptionId, onBack }) => {
       if (selectedPrescriptionStatus === "Fulfilled") {
         try {
           const response = await axios.get(
-            `/pharmacy-api/pharmacies/${user.pharmacyId}/feedback/${prescriptionId}`,
+            `/pharmacy-api/pharmacies/${user.pharmacyId.pharmacyId}/feedback/${prescriptionId}`,
             {
               headers: { Authorization: `Bearer ${Cookies.get("token")}` }
             }
@@ -87,7 +87,7 @@ const MedicineDetails = ({ prescriptionId, onBack }) => {
           `/pharmacy-api/prescriptions/${prescriptionId}/medicine-details`,
           {
             params: {
-              pharmacyId: user.pharmacyId
+              pharmacyId: user.pharmacyId.pharmacyId
             }
           }
         );
@@ -110,7 +110,7 @@ const MedicineDetails = ({ prescriptionId, onBack }) => {
     // Navigate to feedback page with pharmacy and prescription info
     navigate('/dashboard/customer-feedback', {
       state: {
-        pharmacyId: user.pharmacyId,
+        pharmacyId: user.pharmacyId.pharmacyId,
         prescriptionId: selectedPrescription,
         patientId: prescriptionUser
       }
@@ -198,7 +198,7 @@ const MedicineDetails = ({ prescriptionId, onBack }) => {
             .filter(medicine => medicine.availableQuantity > 0 && medicine.currentQuantity > 0)
             .map(medicine => 
               axios.put(
-                `/pharmacy-api/inventoryservices/${user.pharmacyId}/update`,
+                `/pharmacy-api/inventoryservices/${user.pharmacyId.pharmacyId}/update`,
                 {
                   medicationId: medicine.medicationId,
                   quantity: medicine.availableQuantity - medicine.currentQuantity
@@ -210,6 +210,16 @@ const MedicineDetails = ({ prescriptionId, onBack }) => {
                 }
               )
             )
+        );
+
+        await axios.post(
+          `/pharmacy-api/analytics/pharmacy/${user.pharmacyId.pharmacyId}/record`,
+          { medicines: billingData.medicines },
+          {
+            headers: { 
+              Authorization: `Bearer ${Cookies.get("token")}` 
+            }
+          }
         );
   
         // Handle PDF display

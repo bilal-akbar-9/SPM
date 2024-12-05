@@ -57,17 +57,23 @@ const PharmacySelection = () => {
 								<Spinner />
 							) : (
 								<Select
-									placeholder="Select a pharmacy"
-									value={selectedPharmacy?.pharmacyId || ""}
-									onChange={(e) => {
-										const selected = pharmacies.find((p) => p.pharmacyId === e.target.value);
-										setSelectedPharmacy(selected);
-									}}>
-									 {pharmacies?.map((pharmacy) => (
-										<option key={pharmacy.pharmacyId} value={pharmacy.pharmacyId}>
-											{pharmacy.name}
-										</option>
-									))}
+								  placeholder="Select a pharmacy"
+								  value={selectedPharmacy?.pharmacyId || ""}
+								  onChange={(e) => {
+									const value = e.target.value;
+									if (!value) {
+									  setSelectedPharmacy({}); // Set to null when placeholder selected
+									  return;
+									}
+									const selected = pharmacies.find((p) => p.pharmacyId === value);
+									setSelectedPharmacy(selected);
+								  }}
+								>
+								  {pharmacies?.map((pharmacy) => (
+									<option key={pharmacy.pharmacyId} value={pharmacy.pharmacyId}>
+									  {pharmacy.name} #{pharmacy.pharmacyId.slice(-5)}
+									</option>
+								  ))}
 								</Select>
 							)}
 						</VStack>

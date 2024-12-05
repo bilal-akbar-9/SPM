@@ -14,6 +14,7 @@ import {
 	Button,
 } from "@chakra-ui/react";
 import axios from "axios";
+import { format } from 'date-fns';
 import {
 	BarChart,
 	Bar,
@@ -45,8 +46,7 @@ const Analytics = () => {
 	const { user } = useUserStore();
 	const { selectedPharmacy } = usePharmacyStore();
 	const pharmacyId =
-		user.role === "admin" ? selectedPharmacy.pharmacyId : user?.pharmacyId;
-	console.log(user);
+		user.role === "admin" ? selectedPharmacy?.pharmacyId : user?.pharmacyId.pharmacyId;
 	const [staticFinancials, setStaticFinancials] = useState({});
 	const [topMedicines, setTopMedicines] = useState([]);
 	const [topMonthlyPrescriptions, setTopMonthlyPrescriptions] = useState([]);
@@ -90,7 +90,6 @@ const Analytics = () => {
 					headers: { Authorization: `Bearer ${Cookies.get("token")}` },
 				}),
 			]);
-
 			// Data comes pre-sorted from backend, just slice top 10
 			setTopMedicines(topMedRes.data.slice(0, 10));
 			setTopPrescriptions(topPresRes.data.slice(0, 10));
@@ -159,12 +158,12 @@ const Analytics = () => {
 	};
 
 	useEffect(() => {
-		if (Object.keys(selectedPharmacy).length) fetchTopData();
-	}, [selectedPharmacy]);
+		if (pharmacyId) fetchTopData();
+	}, [pharmacyId]);
 
 	useEffect(() => {
-		if (Object.keys(selectedPharmacy).length) fetchData();
-	}, [period, year, month, selectedPharmacy]);
+		if (pharmacyId) fetchData();
+	}, [period, year, month, pharmacyId]);
 
 	const formatMedicationData = (data) => {
 		return data.map((item) => ({
@@ -242,19 +241,34 @@ const Analytics = () => {
 	};
 
 	const calculatePercentageChange = (data, comparison, metricType) => {
-		if (!data || !data[`previous${comparison === "month" ? "Month" : "Year"}`]) return 0;
-
-		const metric = metricType === "Profit" ? data.profit : data[`total${metricType}`];
-
-		const previousMetric =
-			metricType === "Profit"
-				? data[`previous${comparison === "month" ? "Month" : "Year"}`].profit
-				: data[`previous${comparison === "month" ? "Month" : "Year"}`][`total${metricType}`];
-
-		if (!previousMetric) return 0;
-		const percentageChange = ((metric - previousMetric) / previousMetric) * 100;
-		return percentageChange.toFixed(2);
+	  // Early return if no data object
+	  if (!data) return 0;
+	
+	  // Get current metric value
+	  const metric = metricType === "Profit" 
+		? data.profit 
+		: data[`total${metricType}`];
+	
+	  // Get previous period data
+	  const previousData = data[`previous${comparison === "month" ? "Month" : "Year"}`];
+	  if (!previousData) return 0;
+	
+	  // Get previous metric value
+	  const previousMetric = metricType === "Profit"
+		? previousData.profit
+		: previousData[`total${metricType}`];
+	
+	  // If no previous value, return 0
+	  if (!previousMetric) return 0;
+	
+	  // If current is 0 but previous had value, return -100%
+	  if (metric === 0 && previousMetric > 0) return -100;
+	
+	  // Calculate percentage change
+	  const percentageChange = ((metric - previousMetric) / previousMetric) * 100;
+	  return percentageChange.toFixed(2);
 	};
+
 	const reactToPrintFn = useReactToPrint({
 		contentRef,
 		documentTitle: "Analytics Report",
@@ -278,7 +292,7 @@ const Analytics = () => {
 	return (
 		<>
 			{user.role === "admin" && <PharmacySelection />}
-			{Object.keys(selectedPharmacy).length > 0 && (
+			{pharmacyId && (
 				<div>
 					<HStack justify="space-between" className="mb-10 mx-4">
 						<Heading color="var(--text)">Analytics Dashboard</Heading>
@@ -356,48 +370,50 @@ const Analytics = () => {
 							</Grid>
 							<Grid templateColumns="repeat(3, 1fr)" gap={6} gridColumn="span 2">
 								{["Sales", "Cost", "Profit"].map((metric) => (
-									<Box
-										key={metric}
-										bg="white"
-										p={6}
-										borderRadius="xl"
-										boxShadow="lg"
-										textAlign="center">
-										<Heading size="md" mb={4}>
-											Total {metric}
-										</Heading>
-										<Heading size="xl" color="var(--accent)" mb={2}>
-											Rs.{" "}
-											{(metric === "Profit"
-												? staticFinancials.profit
-												: staticFinancials[`total${metric}`]
-											)?.toLocaleString() || 0}
-										</Heading>
-										<Text
-											fontSize="sm"
-											color={
-												parseFloat(calculatePercentageChange(staticFinancials, "month", metric)) >=
-												0
-													? "green.500"
-													: "red.500"
-											}>
-											vs Prev Month: {calculatePercentageChange(staticFinancials, "month", metric)}%
-										</Text>
-										<Text
-											fontSize="sm"
-											color={
-												parseFloat(calculatePercentageChange(staticFinancials, "year", metric)) >= 0
-													? "green.500"
-													: "red.500"
-											}>
-											vs Prev Year: {calculatePercentageChange(staticFinancials, "year", metric)}%
-										</Text>
-									</Box>
+								<Box
+									key={metric}
+									bg="white"
+									p={6}
+									borderRadius="xl"
+									boxShadow="lg"
+									textAlign="center"
+								>
+									<Heading size="md" mb={4}>
+									Total {metric} - {format(new Date(), 'MMM, yy')}
+									</Heading>
+									<Heading size="xl" color="var(--accent)" mb={2}>
+									Rs.{" "}
+									{(metric === "Profit"
+										? staticFinancials.profit
+										: staticFinancials[`total${metric}`]
+									)?.toLocaleString() || 0}
+									</Heading>
+									<Text
+									fontSize="sm"
+									color={
+										parseFloat(calculatePercentageChange(staticFinancials, "month", metric)) >= 0
+										? "green.500" 
+										: "red.500"
+									}
+									>
+									vs Prev Month: {calculatePercentageChange(staticFinancials, "month", metric)}%
+									</Text>
+									<Text
+									fontSize="sm"
+									color={
+										parseFloat(calculatePercentageChange(staticFinancials, "year", metric)) >= 0
+										? "green.500"
+										: "red.500"
+									}
+									>
+									vs Prev Year: {calculatePercentageChange(staticFinancials, "year", metric)}%
+									</Text>
+								</Box>
 								))}
 							</Grid>
 							<Box bg="white" p={6} borderRadius="xl" boxShadow="lg">
 								<Heading size="md" mb={4}>
-									Sales Distribution by Medicine
+									Sales Distribution by Medicine - {format(new Date(), 'MMM, yy')}
 								</Heading>
 								<ResponsiveContainer width="100%" height={300}>
 									<PieChart>
@@ -453,8 +469,8 @@ const Analytics = () => {
 								</HStack>
 							</HStack>
 
-							<Grid templateColumns="repeat(2, 1fr)" gap={6}>
-								<Box bg="white" p={6} borderRadius="xl" boxShadow="lg">
+							<Grid templateColumns="repeat(2, 1fr)" gap={6} gridColumn="span 2">
+								<Box bg="white" p={6} borderRadius="xl" boxShadow="lg" gridColumn="span 2">
 									<Heading size="md" mb={4}>
 										Medication Sales
 									</Heading>
@@ -470,26 +486,6 @@ const Analytics = () => {
 									</ResponsiveContainer>
 								</Box>
 
-								<Box bg="white" p={6} borderRadius="xl" boxShadow="lg">
-									<Heading size="md" mb={4}>
-										Prescription Trends
-									</Heading>
-									<ResponsiveContainer width="100%" height={300}>
-										<BarChart data={formatPrescriptionData(prescriptionTrends)}>
-											<CartesianGrid strokeDasharray="3 3" />
-											<XAxis dataKey="name" />
-											<YAxis />
-											<Tooltip />
-											<Legend />
-											<Bar
-												dataKey="total"
-												name="Total Prescriptions"
-												stroke="var(--accent)"
-												fill="var(--primary)"
-											/>
-										</BarChart>
-									</ResponsiveContainer>
-								</Box>
 
 								<Box bg="white" p={6} borderRadius="xl" boxShadow="lg" gridColumn="span 2">
 									<Heading size="md" mb={4}>
