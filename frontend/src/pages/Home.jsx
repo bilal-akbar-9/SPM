@@ -3,6 +3,7 @@ import { keyframes } from "@emotion/react";
 import { motion } from "framer-motion";
 import { FaHospitalUser, FaPills, FaClinicMedical } from "react-icons/fa";
 import { useState } from "react";
+import useUserStore from "../hooks/useUserStore";
 
 
 const fadeIn = keyframes`
@@ -55,6 +56,7 @@ const Home = () => {
   const [isLoading] = useState(false); // Set to false since we're using mock data
   const animation = `${fadeIn} 1s ease-out forwards`;
   const quote = "Dedicated to serving our community with care and compassion.";
+  const { user } = useUserStore();
 
   return (
     <Box 
@@ -105,6 +107,15 @@ const Home = () => {
             className="italic"
           >
             {quote}
+          </Text>
+          <Text
+            fontSize={{ base: "lg", md: "xl" }}
+            color="var(--text)"
+            maxW="2xl"
+            opacity={0.9}
+            className="italic"
+          >
+            Pharmacy #{user.pharmacyId}
           </Text>
 
           <Box 

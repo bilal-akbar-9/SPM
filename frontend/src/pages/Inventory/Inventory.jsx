@@ -348,11 +348,16 @@ const InventoryPage = () => {
                 <Select
                   placeholder="Select Pharmacy"
                   value={selectedPharmacy}
-                  onChange={(e) => setSelectedPharmacy(e.target.value)}
+                  onChange={(e) => {
+                    const selectedValue = e.target.value;
+                    const [pharmacyName] = selectedValue.split('#');
+                    console.log("The name is", pharmacyName);
+                    setSelectedPharmacy(pharmacyName.trim());
+                  }}
                 >
                   {pharmacies.map((pharmacy) => (
-                    <option key={pharmacy.id} value={pharmacy.id}>
-                      {pharmacy.name}
+                    <option key={pharmacy.id} value={`${pharmacy.name} #${pharmacy.pharmacyId.slice(-4)}`}>
+                      {pharmacy.name} #{pharmacy.pharmacyId.slice(-4)}
                     </option>
                   ))}
                 </Select>
