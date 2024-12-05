@@ -8,5 +8,7 @@ router.get('/notification',InventoryController.getLowStockInventories)
 
 router.put('/:pharmacyId/update',InventoryController.updateQuantity)
 
+router.post('/addinventory',InventoryController.AddInventory)
+
 
 module.exports = router;
