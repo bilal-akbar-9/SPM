@@ -121,10 +121,9 @@ const prescriptionController = {
                     const inventoryItem = pharmacyInventory.medications.find(
                         invMed => invMed.medication.medicationId === med.medicationId
                     );
-                    console
     
                     // Check if quantity is available
-                    const availability = inventoryItem ? inventoryItem.quantity >= med.quantity : false;
+                    const availability = inventoryItem ? inventoryItem.quantity : false;
     
                     return {
                         medicationId: med.medicationId,
