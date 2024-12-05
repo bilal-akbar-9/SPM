@@ -1,5 +1,6 @@
 const InventoryService = require("../models/Inventory.schema");
-const MedicineSchema = require("../models/Medicine.schema");
+const Medicine = require("../models/Medicine.schema");
+const Pharmacy=require("../models/Pharmacy.schema");
 
 const InventoryController = {
   getInventoryByPharmacyId: async (req, res) => {
@@ -41,40 +42,42 @@ const InventoryController = {
       );
 
       res.status(200).json(inventories);
-      
     } catch (error) {
       console.error("Error fetching inventories:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   },
-   getLowStockInventories : async (req, res) => {
+  getLowStockInventories: async (req, res) => {
     try {
-        const lowStockInventories = await InventoryService.find({
-            'medications.quantity': { $lt: 20 }
-        }).populate('medications.medication');
+      const lowStockInventories = await InventoryService.find({
+        "medications.quantity": { $lt: 20 },
+      }).populate("medications.medication");
 
-        if (!lowStockInventories.length) {
-            return res.status(404).json({ message: "No low-stock inventories found." });
-        }
+      if (!lowStockInventories.length) {
+        return res
+          .status(404)
+          .json({ message: "No low-stock inventories found." });
+      }
 
-        res.status(200).json({ inventories: lowStockInventories });
+      res.status(200).json({ inventories: lowStockInventories });
     } catch (error) {
-        console.error('Error fetching low-stock inventories:', error);
-        res.status(500).json({ message: "Internal Server Error." });
+      console.error("Error fetching low-stock inventories:", error);
+      res.status(500).json({ message: "Internal Server Error." });
     }
   },
-  updateQuantity : async (req, res) => {
+  updateQuantity: async (req, res) => {
     const { pharmacyId } = req.params;
-     const { medicationId, quantity } = req.body;
-  
+    const { medicationId, quantity } = req.body;
+
     try {
       // Validate the input
       if (!medicationId || quantity === undefined || quantity < 0) {
         return res.status(400).json({
-          message: "Invalid input. Medication ID and a non-negative quantity are required.",
+          message:
+            "Invalid input. Medication ID and a non-negative quantity are required.",
         });
       }
-  
+
       // Find the inventory record for the given pharmacy
       const inventory = await InventoryService.findOne({ pharmacyId }).populate(
         "medications.medication"
@@ -86,26 +89,26 @@ const InventoryController = {
         });
       }
 
-  
       // Find the medication within the inventory
       const medication = inventory.medications.find(
-        (med) => 
-          med.medication._id.toString() === medicationId || 
-        (med.medication.medicationId && med.medication.medicationId === medicationId)
+        (med) =>
+          med.medication._id.toString() === medicationId ||
+          (med.medication.medicationId &&
+            med.medication.medicationId === medicationId)
       );
-  
+
       if (!medication) {
         return res.status(404).json({
           message: "Medication not found in inventory.",
         });
       }
-  
+
       // Update the quantity
       medication.quantity = quantity;
-  
+
       // Save the updated inventory
       await inventory.save();
-  
+
       return res.status(200).json({
         message: "Quantity updated successfully.",
         updatedMedication: medication,
@@ -117,10 +120,69 @@ const InventoryController = {
         error: error.message,
       });
     }
-  }
-  
-  
+  },
+  AddInventory: async (req, res) => {
+    const { pharmacyName, medicineName, quantity } = req.body;
+   // console.log(pharmacyName,medicineName,quantity)
 
+    // Validate input
+    if (!pharmacyName || !medicineName || !quantity || quantity <= 0) {
+      return res.status(400).json({ message: "Invalid input data." });
+    }
+
+    try {
+      // Find the pharmacy by name
+      const pharmacy = await Pharmacy.findOne({ name: pharmacyName });
+      
+      if (!pharmacy) {
+        return res.status(404).json({ message: "Pharmacy not found." });
+      }
+
+      // Find the medicine by name
+      const medicine = await Medicine.findOne({ name: medicineName });
+      if (!medicine) {
+        return res.status(404).json({ message: "Medicine not found." });
+      }
+
+      // Check if inventory entry for the pharmacy already exists
+      let inventory = await InventoryService.findOne({
+        pharmacyId: pharmacy.pharmacyId,
+      });
+      
+      if (!inventory) {
+        // Create a new inventory record if none exists
+        inventory = new InventoryService({
+          pharmacyId: pharmacy.pharmacyId,
+          medications: [],
+        });
+      }
+
+      // Check if the medication is already in the inventory
+      const existingMedication = inventory.medications.find(
+        (med) => med.medication.toString() === medicine._id.toString()
+      );
+
+      if (existingMedication) {
+        // Update quantity if medication already exists
+        existingMedication.quantity += quantity;
+      } else {
+        // Add new medication to inventory
+        inventory.medications.push({
+          medication: medicine._id,
+          quantity,
+          expirationDate: new Date(), // Replace with actual expiration logic if needed
+        });
+      }
+
+      // Save the inventory
+      await inventory.save();
+
+      res.status(200).json({ message: "Inventory updated successfully." });
+    } catch (error) {
+      console.error("Error updating inventory:", error);
+      res.status(500).json({ message: "Internal server error." });
+    }
+  },
 };
 
 module.exports = InventoryController;
