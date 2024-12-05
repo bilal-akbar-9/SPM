@@ -30,8 +30,9 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    console.log(formData);
     try {
-      await axios.post('/pharmacy-api/users', formData);
+      await axios.post('/pharmacy-api/users/register', formData);
       toast({
         title: 'Registration successful',
         description: 'You can now login',

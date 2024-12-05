@@ -48,5 +48,11 @@ router.delete("/:id", VerifyToken, VerifyAdmin, userController.deleteUser);
 router.post("/login", userController.loginUser);
 
 
+//register a new user
+/**
+ * @route POST /api/users/register
+ * @desc Register a new user
+ */
+router.post("/register", userController.createUser);
 
 module.exports = router;
