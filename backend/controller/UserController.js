@@ -49,9 +49,11 @@ const userController = {
 
 	createUser: async (req, res) => {
 		try {
+			// console.log("Creating user");
 			const { username, password, name, role, pharmacyId } = req.body;
 
 			const existingUser = await UserSchema.findOne({ username });
+			
 			if (existingUser) {
 				return res.status(400).json({ message: "Username already exists" });
 			}
@@ -64,6 +66,7 @@ const userController = {
 				role,
 				pharmacyId,
 			});
+			// console.log(newUser);
 
 			await newUser.save();
 
@@ -125,16 +128,18 @@ const userController = {
 			});
 
 			if (!user) {
+				console.log("1");
 				return res.status(401).json({ message: "Invalid credentials" });
 			}
 
 			if (password !== user.password) {
 				// Direct password comparison
+				console.log("2");
 				return res.status(401).json({ message: "Invalid credentials" });
 			}
 
 			const userResponse = user.toObject();
-			delete userResponse.password;
+			// delete userResponse.password;
 			const token = jwt.sign(
 				{
 					userId: userResponse._id,
@@ -145,7 +150,7 @@ const userController = {
 			);
 			userResponse.token = token;
 
-			res.status(200).json({ message: "Login successful", user: userResponse, token });
+			res.status(200).json({ message: "Login successful", user: user, token });
 		} catch (error) {
 			res.status(500).json({ message: "Error during login", error: error.message });
 		}
